@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="ddd57814-30df-4edf-baa3-f76ed99bca6b"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&amp;family=Helvetica+Neue&amp;display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;background:#F6F2EA;color:#15130F;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+    * {box-sizing:border-box}
+    ::selection{background:#1F5C42;color:#F6F2EA}
+    input,button,textarea{font-family:inherit}
+    ::-webkit-scrollbar{width:10px;height:10px}
+    ::-webkit-scrollbar-thumb{background:rgba(21,19,15,0.25);border-radius:10px}
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;position:relative;overflow-x:hidden">
+
+  <!-- ANNOUNCEMENT BAR -->
+  <div style="background:#15130F;color:#F6F2EA;text-align:center;padding:9px 16px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase">
+    Complimentary Lagos delivery on orders over ₦150,000 &nbsp;·&nbsp; Bespoke atelier now booking for December
+  </div>
+
+  <!-- NAV -->
+  <header data-screen-label="Nav" style="position:sticky;top:0;z-index:40;background:rgba(246,242,234,0.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(21,19,15,0.1)">
+    <div style="max-width:1400px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;row-gap:10px">
+      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;row-gap:8px;min-width:0">
+        <div onclick="{{ goHome }}" style="font-family:'Playfair Display',serif;font-size:22px;letter-spacing:0.06em;cursor:pointer;font-weight:600;flex-shrink:0">VEENA</div>
+        <nav style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;row-gap:8px">
+          <div style="display:flex;border:1px solid rgba(21,19,15,0.18);border-radius:999px;overflow:hidden;flex-shrink:0">
+            <button onclick="{{ setGenderWomen }}" style="{{ womenToggleStyle }}">Women</button>
+            <button onclick="{{ setGenderMen }}" style="{{ menToggleStyle }}">Men</button>
+          </div>
+          <a onclick="{{ goPlpNew }}" style="font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;color:#15130F;text-decoration:none;cursor:pointer;white-space:nowrap" style-hover="color:#1F5C42">New Arrivals</a>
+          <a onclick="{{ goHomeRunway }}" style="font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;color:#15130F;text-decoration:none;cursor:pointer;white-space:nowrap" style-hover="color:#1F5C42">Runway</a>
+          <a onclick="{{ goPdpBespokeHint }}" style="font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;color:#15130F;text-decoration:none;cursor:pointer;white-space:nowrap" style-hover="color:#1F5C42">Bespoke</a>
+          <a onclick="{{ goAbout }}" style="font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;color:#15130F;text-decoration:none;cursor:pointer;white-space:nowrap" style-hover="color:#1F5C42">About</a>
+        </nav>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;row-gap:8px;flex-shrink:0">
+        <span onclick="{{ toggleChat }}" style="font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;color:#1F5C42;border-bottom:1px solid #1F5C42;padding-bottom:2px;white-space:nowrap">Ask Veena</span>
+        <span style="cursor:pointer;font-size:14px;white-space:nowrap">Search</span>
+        <span style="cursor:pointer;font-size:14px;white-space:nowrap">Account</span>
+        <span onclick="{{ goCheckout }}" style="cursor:pointer;font-size:11.5px;letter-spacing:0.03em;border:1px solid #15130F;border-radius:999px;padding:7px 14px;white-space:nowrap">Bag ({{ cartCount }})</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex:1">
+
+  <!-- ============ HOME ============ -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Home">
+
+    <!-- HERO SLIDER -->
+    <section style="position:relative;height:86vh;min-height:560px;overflow:hidden;background:#15130F">
+      <sc-for list="{{ heroSlides }}" as="slide" hint-placeholder-count="3">
+        <div style="{{ slide.wrapStyle }}">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(246,242,234,0.05) 0 2px, transparent 2px 26px), linear-gradient(160deg, {{ slide.tone1 }}, {{ slide.tone2 }})"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:rgba(246,242,234,0.5);font-family:ui-monospace,monospace;font-size:12px;letter-spacing:0.05em">
+            <span>{{ slide.mediaLabel }}</span>
+            <span>{{ slide.dims }}</span>
+          </div>
+          <div style="position:absolute;inset:0;background:linear-gradient(0deg, rgba(0,0,0,0.55), rgba(0,0,0,0) 55%)"></div>
+          <div style="position:absolute;left:56px;bottom:76px;color:#F6F2EA;max-width:520px">
+            <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.75;margin-bottom:14px">{{ slide.eyebrow }}</div>
+            <h1 style="font-family:'Playfair Display',serif;font-size:52px;line-height:1.05;margin:0 0 20px;font-weight:500">{{ slide.title }}</h1>
+            <button onclick="{{ slide.action }}" style="background:#F6F2EA;color:#15130F;border:none;padding:14px 26px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px">{{ slide.cta }}</button>
+          </div>
+        </div>
+      </sc-for>
+      <div style="position:absolute;right:56px;bottom:76px;display:flex;gap:10px">
+        <sc-for list="{{ heroDots }}" as="dot" hint-placeholder-count="3">
+          <span onclick="{{ dot.select }}" style="{{ dot.style }}"></span>
+        </sc-for>
+      </div>
+      <button onclick="{{ prevHero }}" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(246,242,234,0.14);border:none;color:#F6F2EA;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:18px">‹</button>
+      <button onclick="{{ nextHero }}" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(246,242,234,0.14);border:none;color:#F6F2EA;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:18px">›</button>
+    </section>
+
+    <!-- RUNWAY SWITCH BANNER -->
+    <section style="background:#0F0E0B;padding:90px 40px;position:relative" id="runway-banner">
+      <div style="max-width:1400px;margin:0 auto">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:34px;flex-wrap:wrap;gap:18px">
+          <div>
+            <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(246,242,234,0.55);margin-bottom:10px">Autumn/Winter Collection</div>
+            <h2 style="font-family:'Playfair Display',serif;color:#F6F2EA;font-size:36px;margin:0;font-weight:500">See it move on the runway</h2>
+          </div>
+          <div style="display:flex;border:1px solid rgba(246,242,234,0.25);border-radius:999px;overflow:hidden">
+            <button onclick="{{ setRunwayLookbook }}" style="{{ lookbookToggleStyle }}">Lookbook</button>
+            <button onclick="{{ setRunwayFilm }}" style="{{ filmToggleStyle }}">Runway Film</button>
+          </div>
+        </div>
+
+        <sc-if value="{{ isRunwayFilm }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative;aspect-ratio:16/7.2;border-radius:4px;overflow:hidden;background:linear-gradient(160deg,#1c2a24,#0d1512)">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg, rgba(246,242,234,0.04) 0 3px, transparent 3px 30px)"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px">
+              <button onclick="{{ noop }}" style="width:76px;height:76px;border-radius:50%;background:rgba(246,242,234,0.92);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:#15130F">▶</button>
+              <span style="font-family:ui-monospace,monospace;font-size:12px;letter-spacing:0.06em;color:rgba(246,242,234,0.55)">RUNWAY FILM — "VEENA AW26" — 02:14</span>
+            </div>
+            <div style="position:absolute;left:32px;bottom:28px;color:#F6F2EA;font-family:'Playfair Display',serif;font-size:22px;font-style:italic">"Movement is the true test of a garment."</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isRunwayLookbook }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+            <sc-for list="{{ lookbookTiles }}" as="tile" hint-placeholder-count="4">
+              <div style="aspect-ratio:3/4;background:linear-gradient(160deg,{{ tile.tone1 }},{{ tile.tone2 }});border-radius:3px;position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(246,242,234,0.05) 0 2px, transparent 2px 22px)"></div>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(246,242,234,0.55);font-family:ui-monospace,monospace;font-size:10.5px">{{ tile.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <!-- NEW ARRIVALS GRID -->
+    <section style="padding:90px 40px;max-width:1400px;margin:0 auto">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:40px">
+        <h2 style="font-family:'Playfair Display',serif;font-size:32px;margin:0;font-weight:500">New in — {{ genderLabel }}</h2>
+        <span onclick="{{ goPlpNew }}" style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-bottom:1px solid #15130F;padding-bottom:2px">View all</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px">
+        <sc-for list="{{ homeProducts }}" as="p" hint-placeholder-count="3">
+          <div onclick="{{ p.open }}" style="cursor:pointer">
+            <div style="aspect-ratio:3/4;position:relative;overflow:hidden;border-radius:3px;background:linear-gradient(160deg,{{ p.tone1 }},{{ p.tone2 }})">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(21,19,15,0.05) 0 2px, transparent 2px 24px)"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(21,19,15,0.4);font-family:ui-monospace,monospace;font-size:11px">PRODUCT SHOT · {{ p.color }}</div>
+              <span style="position:absolute;top:14px;left:14px;background:#F6F2EA;color:#15130F;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px">{{ p.cat }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:14px">
+              <span style="font-size:14px">{{ p.name }}</span>
+              <span style="font-size:14px;color:rgba(21,19,15,0.6)">{{ p.price }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- CATEGORY TILES -->
+    <section style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+      <div onclick="{{ setGenderWomen }}" style="position:relative;height:460px;cursor:pointer;overflow:hidden;background:linear-gradient(160deg,#c9beac,#8f8571)">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(21,19,15,0.06) 0 2px, transparent 2px 26px)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(0deg, rgba(0,0,0,0.45), rgba(0,0,0,0) 50%)"></div>
+        <div style="position:absolute;left:36px;bottom:34px;color:#F6F2EA;font-family:'Playfair Display',serif;font-size:28px">Shop Women</div>
+      </div>
+      <div onclick="{{ setGenderMen }}" style="position:relative;height:460px;cursor:pointer;overflow:hidden;background:linear-gradient(160deg,#4b4a45,#242320)">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(246,242,234,0.05) 0 2px, transparent 2px 26px)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(0deg, rgba(0,0,0,0.45), rgba(0,0,0,0) 50%)"></div>
+        <div style="position:absolute;left:36px;bottom:34px;color:#F6F2EA;font-family:'Playfair Display',serif;font-size:28px">Shop Men</div>
+      </div>
+    </section>
+
+    <!-- BESPOKE TEASER -->
+    <section style="padding:100px 40px;background:#EEE7D8">
+      <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center">
+        <div>
+          <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#1F5C42;margin-bottom:14px">Made to Measure</div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:34px;margin:0 0 18px;font-weight:500">A garment built around you</h2>
+          <p style="font-size:15px;line-height:1.7;color:rgba(21,19,15,0.7);max-width:440px;margin:0 0 26px">From a single alteration to a fully bespoke piece, our atelier works with your measurements, fabric preferences and timeline.</p>
+          <button onclick="{{ goPdpBespokeHint }}" style="background:#15130F;color:#F6F2EA;border:none;padding:14px 26px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px">Start a bespoke request</button>
+        </div>
+        <div style="aspect-ratio:4/3;background:linear-gradient(160deg,#d8cdb6,#a99c7d);border-radius:3px;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(21,19,15,0.05) 0 2px, transparent 2px 24px)"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(21,19,15,0.4);font-family:ui-monospace,monospace;font-size:11px">ATELIER · FITTING SESSION</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT TEASER -->
+    <section style="padding:110px 40px;text-align:center;max-width:820px;margin:0 auto">
+      <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(21,19,15,0.5);margin-bottom:18px">The House of Veena</div>
+      <p style="font-family:'Playfair Display',serif;font-size:28px;font-style:italic;line-height:1.5;margin:0 0 26px">"Every stitch begins with the person who will wear it — Veena is fashion built on relationship, not just fabric."</p>
+      <span onclick="{{ goAbout }}" style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-bottom:1px solid #15130F;padding-bottom:2px">Read our story</span>
+    </section>
+
+  </div>
+  </sc-if>
+
+  <!-- ============ PLP ============ -->
+  <sc-if value="{{ isPlp }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Product Listing" style="max-width:1400px;margin:0 auto;padding:44px 40px 100px">
+    <div style="font-size:12px;color:rgba(21,19,15,0.5);margin-bottom:18px">{{ genderLabel }} / New Arrivals</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px">
+      <h1 style="font-family:'Playfair Display',serif;font-size:36px;margin:0;font-weight:500">{{ genderLabel }}'s New Arrivals</h1>
+      <div style="font-size:13px;color:rgba(21,19,15,0.6)">{{ plpCount }} items</div>
+    </div>
+    <div style="display:grid;grid-template-columns:220px 1fr;gap:48px">
+      <aside>
+        <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;font-weight:600">Filter</div>
+        <div style="margin-bottom:28px">
+          <div style="font-size:12.5px;color:rgba(21,19,15,0.5);margin-bottom:10px">Category</div>
+          <sc-for list="{{ plpFilters }}" as="f" hint-placeholder-count="4">
+            <div onclick="{{ f.toggle }}" style="{{ f.style }}">{{ f.label }}</div>
+          </sc-for>
+        </div>
+        <div style="margin-bottom:28px">
+          <div style="font-size:12.5px;color:rgba(21,19,15,0.5);margin-bottom:10px">Color</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ plpColors }}" as="c" hint-placeholder-count="5">
+              <span style="{{ c.style }}"></span>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12.5px;color:rgba(21,19,15,0.5);margin-bottom:10px">Price</div>
+          <div style="font-size:13px;color:rgba(21,19,15,0.7)">₦0 — ₦550,000</div>
+        </div>
+      </aside>
+      <div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px">
+          <sc-for list="{{ plpProducts }}" as="p" hint-placeholder-count="6">
+            <div onmouseenter="{{ p.onHover }}" onmouseleave="{{ p.onLeave }}" onclick="{{ p.open }}" style="cursor:pointer">
+              <div style="aspect-ratio:3/4;position:relative;overflow:hidden;border-radius:3px;background:linear-gradient(160deg,{{ p.tone1 }},{{ p.tone2 }})">
+                <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(21,19,15,0.05) 0 2px, transparent 2px 24px)"></div>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(21,19,15,0.4);font-family:ui-monospace,monospace;font-size:11px">{{ p.mediaLabel }}</div>
+                <span style="position:absolute;top:14px;right:14px;background:rgba(246,242,234,0.9);border-radius:999px;padding:5px 9px;font-size:9.5px;letter-spacing:0.06em;text-transform:uppercase">{{ p.mediaTag }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:14px">
+                <span style="font-size:14px">{{ p.name }}</span>
+                <span style="font-size:14px;color:rgba(21,19,15,0.6)">{{ p.price }}</span>
+              </div>
+              <div style="font-size:12px;color:rgba(21,19,15,0.45);margin-top:2px">{{ p.color }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ PDP ============ -->
+  <sc-if value="{{ isPdp }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Product Detail" style="max-width:1400px;margin:0 auto;padding:36px 40px 110px">
+    <div style="font-size:12px;color:rgba(21,19,15,0.5);margin-bottom:24px">{{ genderLabel }} / {{ product.cat }} / {{ product.name }}</div>
+    <div style="display:grid;grid-template-columns:56px 1fr 460px;gap:22px">
+
+      <!-- thumbnail rail -->
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ pdpMedia }}" as="m" hint-placeholder-count="4">
+          <div onclick="{{ m.select }}" style="{{ m.thumbStyle }}">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(21,19,15,0.35)">{{ m.shortLabel }}</div>
+            <sc-if value="{{ m.isVideo }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;bottom:3px;right:3px;font-size:8px;background:#15130F;color:#fff;border-radius:2px;padding:1px 3px">▶</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- main viewer -->
+      <div style="position:relative;aspect-ratio:4/5;border-radius:3px;overflow:hidden;background:linear-gradient(160deg,{{ activeMedia.tone1 }},{{ activeMedia.tone2 }})">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(21,19,15,0.05) 0 2px, transparent 2px 26px)"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:rgba(21,19,15,0.4);font-family:ui-monospace,monospace;font-size:12px">
+          <span>{{ activeMedia.label }}</span>
+        </div>
+        <sc-if value="{{ activeMedia.isVideo }}" hint-placeholder-val="{{ false }}">
+          <button style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(246,242,234,0.92);border:none;font-size:20px;cursor:pointer">▶</button>
+        </sc-if>
+        <span style="position:absolute;top:16px;left:16px;background:rgba(246,242,234,0.92);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px">{{ activeMedia.tag }}</span>
+      </div>
+
+      <!-- info panel -->
+      <div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:28px;margin:0 0 8px;font-weight:500">{{ product.name }}</h1>
+        <div style="font-size:17px;color:rgba(21,19,15,0.75);margin-bottom:20px">{{ product.price }}</div>
+
+        <div style="margin-bottom:22px">
+          <div style="font-size:12.5px;color:rgba(21,19,15,0.5);margin-bottom:10px">Colour — {{ selectedColorName }}</div>
+          <div style="display:flex;gap:9px">
+            <sc-for list="{{ pdpColors }}" as="c" hint-placeholder-count="3">
+              <span onclick="{{ c.select }}" style="{{ c.style }}"></span>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="margin-bottom:26px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:12.5px;color:rgba(21,19,15,0.5)">Size</span>
+            <span style="font-size:12.5px;text-decoration:underline;cursor:pointer;color:rgba(21,19,15,0.6)">Size guide</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ pdpSizes }}" as="s" hint-placeholder-count="5">
+              <span onclick="{{ s.select }}" style="{{ s.style }}">{{ s.label }}</span>
+            </sc-for>
+          </div>
+        </div>
+
+        <button onclick="{{ addToBag }}" style="width:100%;background:#15130F;color:#F6F2EA;border:none;padding:16px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-bottom:12px">Add to Bag — {{ product.price }}</button>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px">
+          <button onclick="{{ openTryOn }}" style="border:1px solid #15130F;background:none;padding:13px;font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;border-radius:2px">Try It On</button>
+          <button onclick="{{ openAdjustment }}" style="border:1px solid #15130F;background:none;padding:13px;font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;border-radius:2px">Request Adjustment</button>
+        </div>
+        <div onclick="{{ openBespoke }}" style="border:1px dashed #1F5C42;color:#1F5C42;padding:14px;font-size:12px;text-align:center;cursor:pointer;border-radius:2px;margin-bottom:26px">Want this reimagined in your own fabric or fit? <u>Request Bespoke →</u></div>
+
+        <div style="border-top:1px solid rgba(21,19,15,0.12)">
+          <sc-for list="{{ pdpTabs }}" as="t" hint-placeholder-count="3">
+            <div>
+              <div onclick="{{ t.select }}" style="display:flex;justify-content:space-between;padding:16px 0;cursor:pointer;font-size:13.5px">
+                <span>{{ t.label }}</span><span>{{ t.icon }}</span>
+              </div>
+              <sc-if value="{{ t.open }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:0 0 16px;font-size:13px;line-height:1.7;color:rgba(21,19,15,0.65)">{{ t.body }}</div>
+              </sc-if>
+              <div style="border-bottom:1px solid rgba(21,19,15,0.12)"></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div onclick="{{ toggleChatAboutProduct }}" style="margin-top:22px;font-size:12.5px;color:#1F5C42;cursor:pointer">💬 Ask Veena about this piece</div>
+      </div>
+    </div>
+
+    <!-- reviews -->
+    <section style="margin-top:90px;max-width:820px">
+      <h2 style="font-family:'Playfair Display',serif;font-size:24px;margin:0 0 26px;font-weight:500">Customer fittings &amp; reviews</h2>
+      <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="3">
+        <div style="padding:20px 0;border-bottom:1px solid rgba(21,19,15,0.1)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:13.5px;font-weight:600">{{ r.name }}</span>
+            <span style="font-size:12px;color:rgba(21,19,15,0.45)">{{ r.rating }}</span>
+          </div>
+          <p style="font-size:13.5px;line-height:1.7;color:rgba(21,19,15,0.7);margin:0">{{ r.text }}</p>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+  </sc-if>
+
+  <!-- ============ ABOUT ============ -->
+  <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="About">
+    <section style="position:relative;height:58vh;min-height:420px;overflow:hidden;background:linear-gradient(160deg,#3a382f,#15130F)">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(246,242,234,0.05) 0 2px, transparent 2px 26px)"></div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(246,242,234,0.4);font-family:ui-monospace,monospace;font-size:12px">PORTRAIT · VEENA, FOUNDER &amp; DESIGNER</div>
+      <div style="position:absolute;left:56px;bottom:56px;color:#F6F2EA">
+        <div style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.7;margin-bottom:12px">The House of Veena</div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:44px;margin:0;font-weight:500">Designed with intention</h1>
+      </div>
+    </section>
+    <section style="max-width:760px;margin:0 auto;padding:100px 40px;text-align:center">
+      <p style="font-family:'Playfair Display',serif;font-size:24px;font-style:italic;line-height:1.6;margin:0 0 40px">"I started Veena from a single sewing table in Lagos, convinced that fashion should fit the life you actually live — not the other way around."</p>
+      <p style="font-size:14px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(21,19,15,0.5)">— Veena, Founder &amp; Creative Director</p>
+    </section>
+    <section style="max-width:1200px;margin:0 auto;padding:0 40px 100px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center">
+      <div style="aspect-ratio:4/3;background:linear-gradient(160deg,#d8cdb6,#a99c7d);border-radius:3px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(21,19,15,0.05) 0 2px, transparent 2px 24px)"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(21,19,15,0.4);font-family:ui-monospace,monospace;font-size:11px">ATELIER · LAGOS</div>
+      </div>
+      <div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:28px;margin:0 0 18px;font-weight:500">Our focus</h2>
+        <p style="font-size:14.5px;line-height:1.8;color:rgba(21,19,15,0.7);margin:0 0 16px">Every Veena piece is cut in our Lagos atelier using fabrics sourced from West African mills and select European houses. We build for two customers at once: the one buying off the rack, and the one who wants it altered to fit exactly right.</p>
+        <p style="font-size:14.5px;line-height:1.8;color:rgba(21,19,15,0.7);margin:0">Bespoke and made-to-measure sit alongside ready-to-wear, because we believe both deserve the same craftsmanship.</p>
+      </div>
+    </section>
+    <section style="background:#EEE7D8;padding:90px 40px">
+      <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:40px;text-align:center">
+        <div><div style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:10px">2016</div><div style="font-size:13px;color:rgba(21,19,15,0.6)">Founded in Lagos with a single tailoring bench</div></div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:10px">40+</div><div style="font-size:13px;color:rgba(21,19,15,0.6)">Artisans across cutting, sewing and finishing</div></div>
+        <div><div style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:10px">12</div><div style="font-size:13px;color:rgba(21,19,15,0.6)">Countries we now ship bespoke orders to</div></div>
+      </div>
+    </section>
+  </div>
+  </sc-if>
+
+  <!-- ============ LEGAL ============ -->
+  <sc-if value="{{ isLegal }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Legal" style="max-width:920px;margin:0 auto;padding:60px 40px 110px">
+    <h1 style="font-family:'Playfair Display',serif;font-size:34px;margin:0 0 32px;font-weight:500">Policies</h1>
+    <div style="display:flex;gap:10px;margin-bottom:36px;flex-wrap:wrap">
+      <sc-for list="{{ legalTabs }}" as="lt" hint-placeholder-count="4">
+        <span onclick="{{ lt.select }}" style="{{ lt.style }}">{{ lt.label }}</span>
+      </sc-for>
+    </div>
+    <div style="font-size:14px;line-height:1.85;color:rgba(21,19,15,0.72)">{{ legalBody }}</div>
+  </div>
+  </sc-if>
+
+  <!-- ============ CHECKOUT ============ -->
+  <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Checkout" style="max-width:1180px;margin:0 auto;padding:50px 40px 120px">
+    <h1 style="font-family:'Playfair Display',serif;font-size:32px;margin:0 0 34px;font-weight:500">Checkout</h1>
+
+    <!-- stepper -->
+    <div style="display:flex;gap:0;margin-bottom:46px">
+      <sc-for list="{{ checkoutSteps }}" as="st" hint-placeholder-count="4">
+        <div onclick="{{ st.select }}" style="{{ st.wrapStyle }}">
+          <span style="{{ st.dotStyle }}">{{ st.num }}</span>
+          <span style="{{ st.labelStyle }}">{{ st.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:60px">
+      <div>
+
+        <!-- BAG -->
+        <sc-if value="{{ isStepBag }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <sc-for list="{{ cartItems }}" as="it" hint-placeholder-count="2">
+              <div style="display:grid;grid-template-columns:96px 1fr auto;gap:18px;padding:20px 0;border-bottom:1px solid rgba(21,19,15,0.1);align-items:center">
+                <div style="width:96px;height:120px;border-radius:3px;background:linear-gradient(160deg,{{ it.tone1 }},{{ it.tone2 }})"></div>
+                <div>
+                  <div style="font-size:14.5px;margin-bottom:4px">{{ it.name }}</div>
+                  <div style="font-size:12.5px;color:rgba(21,19,15,0.5)">{{ it.color }} · Size {{ it.size }}</div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+                    <button onclick="{{ it.dec }}" style="width:26px;height:26px;border:1px solid rgba(21,19,15,0.25);background:none;cursor:pointer;border-radius:2px">–</button>
+                    <span style="font-size:13px">{{ it.qty }}</span>
+                    <button onclick="{{ it.inc }}" style="width:26px;height:26px;border:1px solid rgba(21,19,15,0.25);background:none;cursor:pointer;border-radius:2px">+</button>
+                    <span onclick="{{ it.remove }}" style="font-size:12px;text-decoration:underline;color:rgba(21,19,15,0.5);cursor:pointer;margin-left:8px">Remove</span>
+                  </div>
+                </div>
+                <div style="font-size:14.5px">{{ it.lineTotal }}</div>
+              </div>
+            </sc-for>
+            <div style="display:flex;gap:10px;margin-top:24px">
+              <input value="{{ promoCode }}" onchange="{{ setPromoCode }}" placeholder="Promo code" style="flex:1;border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+              <button style="border:1px solid #15130F;background:none;padding:12px 20px;font-size:12px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;border-radius:2px">Apply</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- DELIVERY -->
+        <sc-if value="{{ isStepDelivery }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(21,19,15,0.5);margin-bottom:14px">Pickup</div>
+            <sc-for list="{{ deliveryOptionsPickup }}" as="d" hint-placeholder-count="1">
+              <div onclick="{{ d.select }}" style="{{ d.style }}">
+                <div>
+                  <div style="font-size:14px">{{ d.label }}</div>
+                  <div style="font-size:12px;color:rgba(21,19,15,0.5);margin-top:3px">{{ d.eta }}</div>
+                </div>
+                <span style="font-size:13.5px">{{ d.price }}</span>
+              </div>
+            </sc-for>
+            <div style="font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(21,19,15,0.5);margin:30px 0 14px">Shipping</div>
+            <sc-for list="{{ deliveryOptionsShip }}" as="d" hint-placeholder-count="4">
+              <div onclick="{{ d.select }}" style="{{ d.style }}">
+                <div>
+                  <div style="font-size:14px">{{ d.label }}</div>
+                  <div style="font-size:12px;color:rgba(21,19,15,0.5);margin-top:3px">{{ d.eta }}</div>
+                </div>
+                <span style="font-size:13.5px">{{ d.price }}</span>
+              </div>
+            </sc-for>
+            <button onclick="{{ goStepPayment }}" style="width:100%;background:#15130F;color:#F6F2EA;border:none;padding:16px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-top:30px">Continue to Payment</button>
+          </div>
+        </sc-if>
+
+        <!-- PAYMENT -->
+        <sc-if value="{{ isStepPayment }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <sc-for list="{{ paymentOptions }}" as="pm" hint-placeholder-count="3">
+              <div onclick="{{ pm.select }}" style="{{ pm.style }}">
+                <span style="font-size:14px">{{ pm.label }}</span>
+                <span style="{{ pm.radioStyle }}"></span>
+              </div>
+            </sc-for>
+            <div style="margin-top:26px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <input placeholder="Card number" style="grid-column:span 2;border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+              <input placeholder="MM / YY" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+              <input placeholder="CVC" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+            </div>
+            <button onclick="{{ placeOrder }}" style="width:100%;background:#15130F;color:#F6F2EA;border:none;padding:16px;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-top:30px">Place Order — {{ cartTotal }}</button>
+          </div>
+        </sc-if>
+
+        <!-- CONFIRM -->
+        <sc-if value="{{ isStepConfirm }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:60px 0">
+            <div style="width:64px;height:64px;border-radius:50%;background:#1F5C42;color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 24px">✓</div>
+            <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin:0 0 12px;font-weight:500">Order confirmed</h2>
+            <p style="font-size:14px;color:rgba(21,19,15,0.6);margin:0 0 30px">Order #VN-20481 · A confirmation has been sent to your email</p>
+            <span onclick="{{ goHome }}" style="font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-bottom:1px solid #15130F;padding-bottom:2px">Continue shopping</span>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <!-- order summary -->
+      <sc-if value="{{ showSummary }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#EEE7D8;border-radius:4px;padding:28px;align-self:flex-start">
+          <div style="font-size:13px;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:20px">Order Summary</div>
+          <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:10px"><span>Subtotal</span><span>{{ cartSubtotal }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:10px"><span>Delivery</span><span>{{ deliveryFee }}</span></div>
+          <div style="border-top:1px solid rgba(21,19,15,0.15);margin:14px 0;padding-top:14px;display:flex;justify-content:space-between;font-size:15px;font-weight:600"><span>Total</span><span>{{ cartTotal }}</span></div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="background:#15130F;color:#F6F2EA;padding:70px 40px 32px;margin-top:auto">
+    <div style="max-width:1400px;margin:0 auto">
+      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;margin-bottom:56px">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:14px">VEENA</div>
+          <p style="font-size:13px;line-height:1.7;color:rgba(246,242,234,0.55);max-width:280px">Ready-to-wear and bespoke fashion, cut and finished in Lagos.</p>
+        </div>
+        <div>
+          <div style="font-size:11.5px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,242,234,0.5);margin-bottom:14px">Shop</div>
+          <div onclick="{{ goPlpNew }}" style="font-size:13px;margin-bottom:10px;cursor:pointer;color:rgba(246,242,234,0.85)">New Arrivals</div>
+          <div onclick="{{ goPdpBespokeHint }}" style="font-size:13px;margin-bottom:10px;cursor:pointer;color:rgba(246,242,234,0.85)">Bespoke</div>
+          <div onclick="{{ goHomeRunway }}" style="font-size:13px;margin-bottom:10px;cursor:pointer;color:rgba(246,242,234,0.85)">Runway</div>
+        </div>
+        <div>
+          <div style="font-size:11.5px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,242,234,0.5);margin-bottom:14px">Company</div>
+          <div onclick="{{ goAbout }}" style="font-size:13px;margin-bottom:10px;cursor:pointer;color:rgba(246,242,234,0.85)">About Veena</div>
+          <div onclick="{{ goLegal }}" style="font-size:13px;margin-bottom:10px;cursor:pointer;color:rgba(246,242,234,0.85)">Terms &amp; Policies</div>
+        </div>
+        <div>
+          <div style="font-size:11.5px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(246,242,234,0.5);margin-bottom:14px">Newsletter</div>
+          <div style="display:flex;gap:0;border-bottom:1px solid rgba(246,242,234,0.35);padding-bottom:8px">
+            <input placeholder="Email address" style="background:none;border:none;color:#F6F2EA;font-size:13px;flex:1;outline:none">
+            <span style="cursor:pointer;font-size:13px">→</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(246,242,234,0.15);padding-top:24px;font-size:12px;color:rgba(246,242,234,0.45)">
+        <span>© 2026 Veena Fashion House. All rights reserved.</span>
+        <span onclick="{{ goLegal }}" style="cursor:pointer">Terms · Privacy · Payment Terms</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- COOKIE BANNER -->
+  <sc-if value="{{ cookieVisible }}" hint-placeholder-val="{{ true }}">
+    <div style="position:fixed;left:24px;right:24px;bottom:24px;max-width:640px;margin:0 auto;background:#15130F;color:#F6F2EA;padding:20px 24px;border-radius:6px;z-index:60;display:flex;align-items:center;gap:20px;box-shadow:0 20px 50px rgba(0,0,0,0.3)">
+      <p style="font-size:12.5px;line-height:1.6;margin:0;flex:1">We use cookies to improve your shopping experience and remember your preferences. Read our <span onclick="{{ goLegal }}" style="text-decoration:underline;cursor:pointer">Cookie Policy</span>.</p>
+      <div style="display:flex;gap:10px;flex-shrink:0">
+        <button onclick="{{ rejectCookies }}" style="background:none;border:1px solid rgba(246,242,234,0.4);color:#F6F2EA;padding:9px 14px;font-size:11.5px;letter-spacing:0.04em;cursor:pointer;border-radius:2px">Reject</button>
+        <button onclick="{{ acceptCookies }}" style="background:#F6F2EA;border:none;color:#15130F;padding:9px 16px;font-size:11.5px;letter-spacing:0.04em;cursor:pointer;border-radius:2px">Accept</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ASK VEENA FAB -->
+  <button onclick="{{ toggleChat }}" style="position:fixed;right:28px;bottom:28px;z-index:70;background:#1F5C42;color:#F6F2EA;border:none;width:58px;height:58px;border-radius:50%;font-size:20px;cursor:pointer;box-shadow:0 10px 26px rgba(31,92,66,0.4)">💬</button>
+
+  <!-- ASK VEENA PANEL -->
+  <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;right:28px;bottom:98px;z-index:70;width:340px;height:460px;background:#F6F2EA;border-radius:10px;box-shadow:0 24px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(21,19,15,0.1)">
+      <div style="background:#15130F;color:#F6F2EA;padding:16px 18px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:15px">Ask Veena</div>
+          <div style="font-size:10.5px;color:rgba(246,242,234,0.55)">Usually replies instantly</div>
+        </div>
+        <span onclick="{{ toggleChat }}" style="cursor:pointer;font-size:16px">×</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ chatMessages }}" as="msg" hint-placeholder-count="2">
+          <div style="{{ msg.wrapStyle }}">
+            <div style="{{ msg.bubbleStyle }}">{{ msg.text }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid rgba(21,19,15,0.1)">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+          <sc-for list="{{ chatQuickReplies }}" as="q" hint-placeholder-count="4">
+            <span onclick="{{ q.send }}" style="font-size:11px;border:1px solid rgba(21,19,15,0.25);border-radius:999px;padding:6px 10px;cursor:pointer">{{ q.label }}</span>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input value="{{ chatDraft }}" onchange="{{ setChatDraft }}" placeholder="Type a message…" style="flex:1;border:1px solid rgba(21,19,15,0.2);border-radius:999px;padding:10px 14px;font-size:12.5px;outline:none">
+          <button onclick="{{ sendChatDraft }}" style="background:#1F5C42;color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer">→</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- MODAL OVERLAY: Try On / Adjustment / Bespoke -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onclick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(21,19,15,0.55);z-index:80;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onclick="{{ noop }}" style="background:#F6F2EA;border-radius:8px;width:100%;max-width:560px;max-height:86vh;overflow-y:auto;padding:34px">
+
+        <!-- TRY ON -->
+        <sc-if value="{{ isModalTryOn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px">
+            <div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#1F5C42;margin-bottom:8px">Online Fitting</div>
+              <h2 style="font-family:'Playfair Display',serif;font-size:24px;margin:0;font-weight:500">Try It On</h2>
+            </div>
+            <span onclick="{{ closeModal }}" style="cursor:pointer;font-size:20px">×</span>
+          </div>
+
+          <sc-if value="{{ tryOnSubmitted }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:30px 0">
+              <div style="aspect-ratio:3/4;max-width:220px;margin:0 auto 22px;border-radius:4px;background:linear-gradient(160deg,#e7ddc9,#c7b998);position:relative;overflow:hidden">
+                <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg, rgba(21,19,15,0.06) 0 2px, transparent 2px 22px)"></div>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(21,19,15,0.4);font-family:ui-monospace,monospace;font-size:10.5px;text-align:center;padding:12px">SIMULATED FIT PREVIEW</div>
+              </div>
+              <p style="font-size:14px;color:rgba(21,19,15,0.65);margin:0 0 22px">Based on your input, this piece is a predicted true-to-size fit in Medium. Not quite right? Request an adjustment from the product page.</p>
+              <button onclick="{{ closeModal }}" style="background:#15130F;color:#F6F2EA;border:none;padding:13px 26px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">Done</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isTryOnStep0 }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <p style="font-size:13.5px;color:rgba(21,19,15,0.6);margin:0 0 18px">Choose how you'd like to preview the fit.</p>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+                <sc-for list="{{ tryOnMethods }}" as="m" hint-placeholder-count="3">
+                  <div onclick="{{ m.select }}" style="{{ m.style }}">
+                    <span style="font-size:14px;font-weight:600">{{ m.label }}</span>
+                    <span style="font-size:12.5px;color:rgba(21,19,15,0.55)">{{ m.desc }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <button onclick="{{ tryOnGoStep1 }}" disabled="{{ false }}" style="width:100%;background:#15130F;color:#F6F2EA;border:none;padding:14px;font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">Continue</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isTryOnStep1 }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <p style="font-size:13.5px;color:rgba(21,19,15,0.6);margin:0 0 18px">Add a couple of details so we can predict your fit.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px">
+                <input placeholder="Height (cm)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+                <input placeholder="Weight (kg)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+                <input placeholder="Chest / Bust (cm)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+                <input placeholder="Waist (cm)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+              </div>
+              <div style="display:flex;gap:10px">
+                <button onclick="{{ tryOnGoStep0 }}" style="flex:1;border:1px solid #15130F;background:none;padding:14px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">Back</button>
+                <button onclick="{{ submitTryOn }}" style="flex:2;background:#15130F;color:#F6F2EA;border:none;padding:14px;font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">See My Fit Preview</button>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <!-- ADJUSTMENT -->
+        <sc-if value="{{ isModalAdjustment }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px">
+            <div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#1F5C42;margin-bottom:8px">Request Adjustment</div>
+              <h2 style="font-family:'Playfair Display',serif;font-size:24px;margin:0;font-weight:500">Tell us what to adjust</h2>
+            </div>
+            <span onclick="{{ closeModal }}" style="cursor:pointer;font-size:20px">×</span>
+          </div>
+          <sc-if value="{{ adjustmentSubmitted }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:30px 0">
+              <div style="width:56px;height:56px;border-radius:50%;background:#1F5C42;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 20px">✓</div>
+              <p style="font-size:14px;color:rgba(21,19,15,0.65);margin:0 0 22px">Request sent — our atelier will reply within 48 hours with a quote and timeline for the {{ adjustmentType }} adjustment.</p>
+              <button onclick="{{ closeModal }}" style="background:#15130F;color:#F6F2EA;border:none;padding:13px 26px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">Done</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ adjustmentNotSubmitted }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font-size:12.5px;color:rgba(21,19,15,0.5);margin-bottom:10px">Adjustment type</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+              <sc-for list="{{ adjustmentTypes }}" as="a" hint-placeholder-count="5">
+                <span onclick="{{ a.select }}" style="{{ a.style }}">{{ a.label }}</span>
+              </sc-for>
+            </div>
+            <textarea value="{{ adjustmentNote }}" onchange="{{ setAdjustmentNote }}" placeholder="Describe the fit issue or what you'd like changed…" style="width:100%;min-height:100px;border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px;margin-bottom:20px;resize:vertical"></textarea>
+            <button onclick="{{ submitAdjustment }}" style="width:100%;background:#15130F;color:#F6F2EA;border:none;padding:14px;font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">Submit Request</button>
+          </div>
+          </sc-if>
+        </sc-if>
+
+        <!-- BESPOKE -->
+        <sc-if value="{{ isModalBespoke }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px">
+            <div>
+              <div style="font-family:ui-monospace,monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#1F5C42;margin-bottom:8px">Made to Measure</div>
+              <h2 style="font-family:'Playfair Display',serif;font-size:24px;margin:0;font-weight:500">Request Bespoke</h2>
+            </div>
+            <span onclick="{{ closeModal }}" style="cursor:pointer;font-size:20px">×</span>
+          </div>
+          <sc-if value="{{ bespokeSubmitted }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:30px 0">
+              <div style="width:56px;height:56px;border-radius:50%;background:#1F5C42;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 20px">✓</div>
+              <p style="font-size:14px;color:rgba(21,19,15,0.65);margin:0 0 22px">Bespoke request received — our atelier will follow up within 48 hours with a quote and a 50% deposit link.</p>
+              <button onclick="{{ closeModal }}" style="background:#15130F;color:#F6F2EA;border:none;padding:13px 26px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">Done</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ bespokeNotSubmitted }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="font-size:12.5px;color:rgba(21,19,15,0.5);margin-bottom:10px">Fabric preference</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+              <sc-for list="{{ bespokeFabricOptions }}" as="f" hint-placeholder-count="5">
+                <span onclick="{{ f.select }}" style="{{ f.style }}">{{ f.label }}</span>
+              </sc-for>
+            </div>
+            <div style="font-size:12.5px;color:rgba(21,19,15,0.5);margin-bottom:10px">Timeline</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+              <sc-for list="{{ bespokeTimelineOptions }}" as="t" hint-placeholder-count="3">
+                <span onclick="{{ t.select }}" style="{{ t.style }}">{{ t.label }}</span>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <input placeholder="Chest / Bust (cm)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+              <input placeholder="Waist (cm)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+              <input placeholder="Hip (cm)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+              <input placeholder="Height (cm)" style="border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px">
+            </div>
+            <textarea value="{{ bespokeNote }}" onchange="{{ setBespokeNote }}" placeholder="Any notes on fit, budget, or occasion…" style="width:100%;min-height:80px;border:1px solid rgba(21,19,15,0.2);padding:12px 14px;font-size:13px;border-radius:2px;margin-bottom:20px;resize:vertical"></textarea>
+            <button onclick="{{ submitBespoke }}" style="width:100%;background:#15130F;color:#F6F2EA;border:none;padding:14px;font-size:12.5px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;border-radius:2px">Submit Bespoke Request</button>
+          </div>
+          </sc-if>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script="">
+
+const PRODUCTS = [
+  { id: 1, gender: 'women', name: 'Silk Wrap Blouse', price: '₦145,000', color: 'Ivory', cat: 'New Arrival', tone1: '#e7ddc9', tone2: '#c7b998' },
+  { id: 2, gender: 'women', name: 'Tailored Wide-Leg Trouser', price: '₦168,000', color: 'Espresso', cat: 'New Arrival', tone1: '#7a6a56', tone2: '#4a3f31' },
+  { id: 3, gender: 'women', name: 'Emerald Column Gown', price: '₦420,000', color: 'Emerald', cat: 'Runway', tone1: '#2f5c48', tone2: '#123024' },
+  { id: 4, gender: 'men', name: 'Structured Wool Overcoat', price: '₦395,000', color: 'Charcoal', cat: 'New Arrival', tone1: '#5a5952', tone2: '#2b2a26' },
+  { id: 5, gender: 'men', name: 'Double-Breasted Blazer', price: '₦285,000', color: 'Ink', cat: 'New Arrival', tone1: '#3a3c3d', tone2: '#17181a' },
+  { id: 6, gender: 'men', name: 'Signature Agbada Set', price: '₦510,000', color: 'Ivory', cat: 'Bespoke Favorite', tone1: '#efe6d0', tone2: '#cbbf9c' },
+];
+
+const SIZES = ['XS', 'S', 'M', 'L', 'XL'];
+const COLOR_SWATCHES = [
+  { name: 'Ivory', hex: '#e7ddc9' },
+  { name: 'Emerald', hex: '#1F5C42' },
+  { name: 'Espresso', hex: '#4a3f31' },
+];
+
+const LEGAL_CONTENT = {
+  terms: 'By using the Veena website you agree to purchase products subject to availability, accurate sizing information provided at checkout, and our right to cancel orders suspected of fraud. All prices are listed in Nigerian Naira unless otherwise stated at checkout for international customers.',
+  privacy: 'Veena collects the information you provide at checkout (name, address, measurements for bespoke orders) solely to fulfil and improve your order. We never sell customer data to third parties. Measurement data submitted for bespoke or fitting requests is retained only for the duration needed to complete your order.',
+  payment: 'We accept major debit/credit cards, direct bank transfer, and pay-on-delivery within Lagos. Bespoke orders require a 50% deposit at order confirmation, with the balance due before dispatch. All bespoke deposits are non-refundable once cutting has begun.',
+  shipping: 'Lagos orders placed before 2pm qualify for next-day delivery. Orders to other Nigerian states arrive within 2–3 business days. Out-of-Lagos remote deliveries may take up to 5 business days. International orders are shipped via courier and typically arrive within 7–14 business days, duties may apply.',
+  cookies: 'Veena uses essential cookies to keep your bag and session active, and optional analytics cookies to understand how customers browse the site. You can withdraw consent for optional cookies at any time from this page.',
+};
+
+const CHAT_SCRIPT = {
+  'Track my order': "Sure — head to Account > Orders and you'll see live status. Orders placed before 2pm Lagos time ship same day.",
+  'Sizing help': "Every product page has a Size Guide link next to the size selector, or use Try It On for a visual fit preview.",
+  'Returns': "You can return unworn ready-to-wear items within 14 days. Bespoke and made-to-measure pieces are final sale.",
+  'Bespoke process': "Bespoke starts with a request form (measurements, fabric, timeline) from any product page — our atelier replies within 48 hours with a quote.",
+  'Store locations': "Our flagship is on Victoria Island, Lagos. Pickup is available there for online orders.",
+};
+
+function tinyId() { return Math.random().toString(36).slice(2, 9); }
+
+class Component extends DCLogic {
+  state = {
+    view: 'home',
+    gender: 'women',
+    runwayMode: 'film',
+    heroIndex: 0,
+    plpProductGender: null,
+    pdpProductId: 1,
+    pdpMediaIndex: 0,
+    pdpColorIdx: 0,
+    pdpSize: null,
+    pdpTab: 'description',
+    cookieVisible: true,
+    chatOpen: false,
+    chatDraft: '',
+    chatMessages: [
+      { from: 'bot', text: "Hi, I'm Veena's shopping assistant. Ask me about sizing, orders, bespoke or returns." },
+    ],
+    cart: [
+      { id: 1, size: 'M', qty: 1 },
+      { id: 4, size: 'L', qty: 1 },
+    ],
+    promoCode: '',
+    checkoutStep: 'bag',
+    deliverySelection: 'next-day',
+    paymentSelection: 'card',
+    modal: null,
+    tryOnStep: 0,
+    tryOnMethod: null,
+    tryOnSubmitted: false,
+    adjustmentType: 'Hem length',
+    adjustmentNote: '',
+    adjustmentSubmitted: false,
+    bespokeFabric: 'Same as shown',
+    bespokeTimeline: 'Standard (3-4 weeks)',
+    bespokeNote: '',
+    bespokeSubmitted: false,
+  };
+
+  goHome = () => this.setState({ view: 'home' });
+  goAbout = () => this.setState({ view: 'about' });
+  goLegal = () => this.setState({ view: 'legal', legalTab: this.state.legalTab || 'terms' });
+  goCheckout = () => this.setState({ view: 'checkout', checkoutStep: 'bag' });
+  goPlpNew = () => this.setState({ view: 'plp' });
+  goHomeRunway = () => this.setState({ view: 'home', runwayMode: 'film' }, () => {
+    const el = document.getElementById('runway-banner');
+    if (el) el.scrollIntoView({ block: 'start' });
+  });
+  goPdpBespokeHint = () => this.setState({ view: 'pdp' });
+
+  setGenderWomen = () => this.setState({ gender: 'women' });
+  setGenderMen = () => this.setState({ gender: 'men' });
+
+  prevHero = () => this.setState(s => ({ heroIndex: (s.heroIndex + 2) % 3 }));
+  nextHero = () => this.setState(s => ({ heroIndex: (s.heroIndex + 1) % 3 }));
+  selectHero = (i) => () => this.setState({ heroIndex: i });
+
+  setRunwayFilm = () => this.setState({ runwayMode: 'film' });
+  setRunwayLookbook = () => this.setState({ runwayMode: 'lookbook' });
+
+  openProduct = (id) => () => this.setState({ view: 'pdp', pdpProductId: id, pdpMediaIndex: 0, pdpColorIdx: 0, pdpSize: null, pdpTab: 'description' });
+
+  selectMedia = (i) => () => this.setState({ pdpMediaIndex: i });
+  selectColor = (i) => () => this.setState({ pdpColorIdx: i });
+  selectSize = (label) => () => this.setState({ pdpSize: label });
+  selectTab = (key) => () => this.setState({ pdpTab: this.state.pdpTab === key ? null : key });
+
+  addToBag = () => {
+    const size = this.state.pdpSize || 'M';
+    this.setState(s => {
+      const existing = s.cart.find(c => c.id === s.pdpProductId && c.size === size);
+      if (existing) {
+        return { cart: s.cart.map(c => c === existing ? { ...c, qty: c.qty + 1 } : c) };
+      }
+      return { cart: [...s.cart, { id: s.pdpProductId, size, qty: 1 }] };
+    });
+  };
+
+  cartInc = (id, size) => () => this.setState(s => ({ cart: s.cart.map(c => (c.id === id && c.size === size) ? { ...c, qty: c.qty + 1 } : c) }));
+  cartDec = (id, size) => () => this.setState(s => ({ cart: s.cart.map(c => (c.id === id && c.size === size) ? { ...c, qty: Math.max(1, c.qty - 1) } : c) }));
+  cartRemove = (id, size) => () => this.setState(s => ({ cart: s.cart.filter(c => !(c.id === id && c.size === size)) }));
+  setPromoCode = (e) => this.setState({ promoCode: e.target.value });
+
+  selectLegalTab = (key) => () => this.setState({ legalTab: key });
+
+  selectCheckoutStep = (key) => () => this.setState({ checkoutStep: key });
+  selectDelivery = (key) => () => this.setState({ deliverySelection: key });
+  goStepPayment = () => this.setState({ checkoutStep: 'payment' });
+  selectPayment = (key) => () => this.setState({ paymentSelection: key });
+  placeOrder = () => this.setState({ checkoutStep: 'confirm' });
+
+  acceptCookies = () => this.setState({ cookieVisible: false });
+  rejectCookies = () => this.setState({ cookieVisible: false });
+
+  toggleChat = () => this.setState(s => ({ chatOpen: !s.chatOpen }));
+  toggleChatAboutProduct = () => this.setState(s => ({
+    chatOpen: true,
+    chatMessages: [...s.chatMessages, { from: 'bot', text: `Happy to help with the ${PRODUCTS.find(p=>p.id===s.pdpProductId).name} — ask about fit, fabric, or bespoke options.` }],
+  }));
+  setChatDraft = (e) => this.setState({ chatDraft: e.target.value });
+  sendQuickReply = (label) => () => {
+    this.setState(s => ({
+      chatMessages: [...s.chatMessages, { from: 'user', text: label }, { from: 'bot', text: CHAT_SCRIPT[label] }],
+    }));
+  };
+  sendChatDraft = () => {
+    const draft = this.state.chatDraft.trim();
+    if (!draft) return;
+    this.setState(s => ({
+      chatDraft: '',
+      chatMessages: [...s.chatMessages, { from: 'user', text: draft }, { from: 'bot', text: "Thanks — one of our stylists will follow up, or try one of the quick topics below for an instant answer." }],
+    }));
+  };
+
+  noop = () => {};
+
+  renderVals() {
+    const s = this.state;
+    const view = s.view;
+    const genderLabel = s.gender === 'women' ? 'Women' : 'Men';
+
+    const pillStyle = (active) => `border:none;padding:9px 20px;font-size:12px;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;background:${active ? '#15130F' : 'transparent'};color:${active ? '#F6F2EA' : '#15130F'}`;
+
+    // hero slides
+    const HERO = [
+      { eyebrow: 'Spring/Summer 2026', title: 'Tailoring that moves with you', cta: 'Shop Women', tone1: '#c9beac', tone2: '#8f8571', mediaLabel: 'HERO IMAGE', dims: '1920×1080', gender: 'women' },
+      { eyebrow: 'Runway Film', title: 'The AW26 collection, in motion', cta: 'Watch the Film', tone1: '#1c2a24', tone2: '#0d1512', mediaLabel: 'HERO VIDEO · 00:42', dims: '1920×1080', gender: 'runway' },
+      { eyebrow: 'For Him', title: 'Modern silhouettes, Lagos-made', cta: 'Shop Men', tone1: '#3a3936', tone2: '#171613', mediaLabel: 'HERO IMAGE', dims: '1920×1080', gender: 'men' },
+    ];
+    const heroSlides = HERO.map((h, i) => ({
+      ...h,
+      wrapStyle: `position:absolute;inset:0;opacity:${i === s.heroIndex ? 1 : 0};transition:opacity 0.6s ease;pointer-events:${i === s.heroIndex ? 'auto' : 'none'}`,
+      action: h.gender === 'women' ? this.setGenderWomen : h.gender === 'men' ? this.setGenderMen : this.goHomeRunway,
+    }));
+    const heroDots = [0, 1, 2].map(i => ({
+      select: this.selectHero(i),
+      style: `width:8px;height:8px;border-radius:50%;cursor:pointer;background:${i === s.heroIndex ? '#F6F2EA' : 'rgba(246,242,234,0.4)'}`,
+    }));
+
+    const isRunwayFilm = s.runwayMode === 'film';
+    const isRunwayLookbook = s.runwayMode === 'lookbook';
+    const lookbookTiles = [
+      { label: 'LOOK 01', tone1: '#d8cdb6', tone2: '#a99c7d' },
+      { label: 'LOOK 02', tone1: '#5a5952', tone2: '#2b2a26' },
+      { label: 'LOOK 03', tone1: '#2f5c48', tone2: '#123024' },
+      { label: 'LOOK 04', tone1: '#efe6d0', tone2: '#cbbf9c' },
+    ];
+
+    const homeProducts = PRODUCTS.filter(p => p.gender === s.gender).map(p => ({ ...p, open: this.openProduct(p.id) }));
+
+    // PLP
+    const plpProducts = PRODUCTS.filter(p => p.gender === s.gender).map(p => ({
+      ...p, mediaLabel: `PRODUCT SHOT · ${p.color}`, mediaTag: 'Image + Video', open: this.openProduct(p.id), onHover: this.noop, onLeave: this.noop,
+    }));
+    const plpFilters = ['All', 'Tops', 'Outerwear', 'Bottoms'].map(f => ({ label: f, toggle: this.noop, style: 'font-size:13px;padding:7px 0;cursor:pointer;color:rgba(21,19,15,0.75)' }));
+    const plpColors = COLOR_SWATCHES.map(c => ({ style: `width:22px;height:22px;border-radius:50%;background:${c.hex};display:inline-block;cursor:pointer;border:1px solid rgba(21,19,15,0.15)` }));
+
+    // PDP
+    const product = PRODUCTS.find(p => p.id === s.pdpProductId) || PRODUCTS[0];
+    const MEDIA = [
+      { label: `${product.name} — Front`, tag: 'Image', isVideo: false, shortLabel: 'IMG 1', tone1: product.tone1, tone2: product.tone2 },
+      { label: `${product.name} — Detail`, tag: 'Image', isVideo: false, shortLabel: 'IMG 2', tone1: product.tone2, tone2: product.tone1 },
+      { label: `${product.name} — On Model`, tag: 'Video · 00:18', isVideo: true, shortLabel: 'VID 1', tone1: product.tone1, tone2: '#15130F' },
+      { label: `${product.name} — Fabric Close-up`, tag: 'Video · 00:09', isVideo: true, shortLabel: 'VID 2', tone1: '#15130F', tone2: product.tone2 },
+    ];
+    const pdpMedia = MEDIA.map((m, i) => ({
+      ...m,
+      select: this.selectMedia(i),
+      thumbStyle: `position:relative;aspect-ratio:1/1;border-radius:2px;cursor:pointer;background:linear-gradient(160deg,${m.tone1},${m.tone2});outline:${i === s.pdpMediaIndex ? '2px solid #15130F' : 'none'};outline-offset:2px`,
+    }));
+    const activeMedia = pdpMedia[s.pdpMediaIndex] || pdpMedia[0];
+
+    const pdpColors = COLOR_SWATCHES.map((c, i) => ({
+      select: this.selectColor(i),
+      style: `width:26px;height:26px;border-radius:50%;background:${c.hex};display:inline-block;cursor:pointer;border:2px solid ${i === s.pdpColorIdx ? '#15130F' : 'rgba(21,19,15,0.15)'};box-sizing:border-box`,
+    }));
+    const selectedColorName = COLOR_SWATCHES[s.pdpColorIdx].name;
+
+    const pdpSizes = SIZES.map(sz => ({
+      label: sz, select: this.selectSize(sz),
+      style: `width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:12.5px;border:1px solid ${s.pdpSize === sz ? '#15130F' : 'rgba(21,19,15,0.25)'};background:${s.pdpSize === sz ? '#15130F' : 'transparent'};color:${s.pdpSize === sz ? '#F6F2EA' : '#15130F'};cursor:pointer;border-radius:2px`,
+    }));
+
+    const TABS = [
+      { key: 'description', label: 'Description', body: `A ${product.color.toLowerCase()} piece cut from responsibly sourced fabric, finished by hand in our Lagos atelier. Designed for everyday wear with a tailored silhouette.` },
+      { key: 'fabric', label: 'Fabric & Care', body: 'Fabric composition varies by piece — details are provided with your order. Dry clean recommended; steam to refresh between wears.' },
+      { key: 'shipping', label: 'Shipping & Returns', body: 'Ready-to-wear ships next-day within Lagos, 2–3 days elsewhere in Nigeria, and 7–14 days internationally. Unworn items are returnable within 14 days.' },
+    ];
+    const pdpTabs = TABS.map(t => ({ ...t, open: s.pdpTab === t.key, select: this.selectTab(t.key), icon: s.pdpTab === t.key ? '−' : '+' }));
+
+    const reviews = [
+      { name: 'Amaka O.', rating: '★★★★★', text: 'Used the Try It On feature before ordering and the fit prediction was spot on. The tailoring is beautiful.' },
+      { name: 'Tunde A.', rating: '★★★★★', text: 'Requested a small adjustment to the sleeve length — the atelier responded within a day and the final piece fit perfectly.' },
+      { name: 'Ifeoma K.', rating: '★★★★☆', text: 'Gorgeous fabric, true to the video preview. Runs slightly generous, sized down and it was perfect.' },
+    ];
+
+    // Legal
+    const legalTab = s.legalTab || 'terms';
+    const legalTabs = [
+      { key: 'terms', label: 'Terms & Conditions' },
+      { key: 'privacy', label: 'Privacy Policy' },
+      { key: 'payment', label: 'Payment Terms' },
+      { key: 'shipping', label: 'Shipping Policy' },
+      { key: 'cookies', label: 'Cookie Policy' },
+    ].map(t => ({ ...t, select: this.selectLegalTab(t.key), style: `font-size:12.5px;letter-spacing:0.03em;padding:9px 16px;border-radius:999px;cursor:pointer;background:${legalTab === t.key ? '#15130F' : 'rgba(21,19,15,0.08)'};color:${legalTab === t.key ? '#F6F2EA' : '#15130F'}` }));
+    const legalBody = LEGAL_CONTENT[legalTab];
+
+    // Checkout
+    const cartItems = s.cart.map(c => {
+      const p = PRODUCTS.find(pp => pp.id === c.id);
+      const unit = parseInt(p.price.replace(/[^0-9]/g, ''), 10);
+      return {
+        ...p, size: c.size, qty: c.qty,
+        lineTotal: '₦' + (unit * c.qty).toLocaleString(),
+        inc: this.cartInc(c.id, c.size), dec: this.cartDec(c.id, c.size), remove: this.cartRemove(c.id, c.size),
+      };
+    });
+    const subtotalNum = cartItems.reduce((sum, it) => sum + parseInt(it.price.replace(/[^0-9]/g, ''), 10) * it.qty, 0);
+    const cartSubtotal = '₦' + subtotalNum.toLocaleString();
+
+    const DELIVERY_PICKUP = [{ key: 'pickup', label: 'Pickup — Veena Flagship, Victoria Island', eta: 'Ready in 2 hours', price: 'Free' }];
+    const DELIVERY_SHIP = [
+      { key: 'next-day', label: 'Next-Day Delivery (Lagos)', eta: 'Arrives tomorrow', price: '₦3,500' },
+      { key: '2-3day', label: '2–3 Day Delivery (Nigeria)', eta: 'Anywhere else in Nigeria', price: '₦5,000' },
+      { key: 'out-lagos', label: 'Out-of-Lagos Delivery', eta: '3–5 business days', price: '₦7,500' },
+      { key: 'intl', label: 'International Delivery', eta: '7–14 business days', price: '$45' },
+    ];
+    const deliveryOptionsPickup = DELIVERY_PICKUP.map(d => ({ ...d, select: this.selectDelivery(d.key), style: rowStyle(d.key === s.deliverySelection) }));
+    const deliveryOptionsShip = DELIVERY_SHIP.map(d => ({ ...d, select: this.selectDelivery(d.key), style: rowStyle(d.key === s.deliverySelection) }));
+    function rowStyle(active) {
+      return `display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border:1px solid ${active ? '#15130F' : 'rgba(21,19,15,0.15)'};background:${active ? 'rgba(21,19,15,0.04)' : 'transparent'};border-radius:3px;cursor:pointer;margin-bottom:10px`;
+    }
+    const allDelivery = [...DELIVERY_PICKUP, ...DELIVERY_SHIP];
+    const chosenDelivery = allDelivery.find(d => d.key === s.deliverySelection) || DELIVERY_SHIP[0];
+    const deliveryFee = chosenDelivery.price === 'Free' ? '₦0' : chosenDelivery.price;
+    const deliveryFeeNum = chosenDelivery.price.includes('$') ? 0 : parseInt(chosenDelivery.price.replace(/[^0-9]/g, ''), 10) || 0;
+    const cartTotal = '₦' + (subtotalNum + deliveryFeeNum).toLocaleString() + (chosenDelivery.price.includes('$') ? ' + $45' : '');
+
+    const PAYMENTS = [
+      { key: 'card', label: 'Debit / Credit Card' },
+      { key: 'transfer', label: 'Bank Transfer' },
+      { key: 'pod', label: 'Pay on Delivery (Lagos only)' },
+    ];
+    const paymentOptions = PAYMENTS.map(p => ({
+      ...p, select: this.selectPayment(p.key),
+      style: `display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border:1px solid ${p.key === s.paymentSelection ? '#15130F' : 'rgba(21,19,15,0.15)'};background:${p.key === s.paymentSelection ? 'rgba(21,19,15,0.04)' : 'transparent'};border-radius:3px;cursor:pointer;margin-bottom:10px`,
+      radioStyle: `width:16px;height:16px;border-radius:50%;border:1px solid #15130F;display:inline-block;background:${p.key === s.paymentSelection ? 'radial-gradient(circle,#15130F 0 40%,transparent 42%)' : 'transparent'}`,
+    }));
+
+    const STEPS = [
+      { key: 'bag', label: 'Bag', num: '1' },
+      { key: 'delivery', label: 'Delivery', num: '2' },
+      { key: 'payment', label: 'Payment', num: '3' },
+      { key: 'confirm', label: 'Confirmation', num: '4' },
+    ];
+    const checkoutSteps = STEPS.map((st, i) => {
+      const active = s.checkoutStep === st.key;
+      return {
+        ...st, select: this.selectCheckoutStep(st.key),
+        wrapStyle: `display:flex;align-items:center;gap:10px;cursor:pointer;padding-right:28px;opacity:${active ? 1 : 0.5}`,
+        dotStyle: `width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:${active ? '#15130F' : 'transparent'};color:${active ? '#F6F2EA' : '#15130F'};border:1px solid #15130F`,
+        labelStyle: `font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase`,
+      };
+    });
+
+    // chat
+    const chatMessages = s.chatMessages.map(m => ({
+      wrapStyle: `display:flex;justify-content:${m.from === 'user' ? 'flex-end' : 'flex-start'}`,
+      bubbleStyle: `max-width:80%;padding:10px 14px;border-radius:12px;font-size:12.5px;line-height:1.5;background:${m.from === 'user' ? '#15130F' : '#EEE7D8'};color:${m.from === 'user' ? '#F6F2EA' : '#15130F'}`,
+      text: m.text,
+    }));
+    const chatQuickReplies = Object.keys(CHAT_SCRIPT).map(label => ({ label, send: this.sendQuickReply(label) }));
+
+    // Modals
+    const isModalTryOn = s.modal === 'tryon';
+    const isModalAdjustment = s.modal === 'adjustment';
+    const isModalBespoke = s.modal === 'bespoke';
+    const modalOpen = !!s.modal;
+
+    const tryOnMethods = [
+      { key: 'photo', label: 'Upload a photo', desc: 'See the garment overlaid on your own photo' },
+      { key: 'measure', label: 'Enter measurements', desc: 'Get a fit prediction from your body measurements' },
+      { key: 'model', label: 'Use a model closest to my build', desc: 'Preview on a similar body type' },
+    ].map(m => ({
+      ...m, select: this.selectTryOnMethod(m.key),
+      style: `display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid ${s.tryOnMethod === m.key ? '#15130F' : 'rgba(21,19,15,0.15)'};background:${s.tryOnMethod === m.key ? 'rgba(21,19,15,0.04)' : 'transparent'};border-radius:4px;cursor:pointer`,
+    }));
+
+    const ADJUSTMENT_TYPES = ['Hem length', 'Sleeve length', 'Waist take-in', 'Shoulder fit', 'Other'];
+    const adjustmentTypes = ADJUSTMENT_TYPES.map(t => ({
+      label: t, select: this.setAdjustmentType(t),
+      style: `font-size:12px;padding:8px 14px;border-radius:999px;cursor:pointer;border:1px solid ${s.adjustmentType === t ? '#15130F' : 'rgba(21,19,15,0.2)'};background:${s.adjustmentType === t ? '#15130F' : 'transparent'};color:${s.adjustmentType === t ? '#F6F2EA' : '#15130F'}`,
+    }));
+
+    const FABRIC_OPTIONS = ['Same as shown', 'Premium wool blend', 'Silk', 'Ankara / wax print', 'Customer-supplied fabric'];
+    const bespokeFabricOptions = FABRIC_OPTIONS.map(f => ({
+      label: f, select: this.setBespokeFabric(f),
+      style: `font-size:12px;padding:8px 14px;border-radius:999px;cursor:pointer;border:1px solid ${s.bespokeFabric === f ? '#15130F' : 'rgba(21,19,15,0.2)'};background:${s.bespokeFabric === f ? '#15130F' : 'transparent'};color:${s.bespokeFabric === f ? '#F6F2EA' : '#15130F'}`,
+    }));
+    const TIMELINE_OPTIONS = ['Standard (3-4 weeks)', 'Priority (2 weeks)', 'Flexible / no rush'];
+    const bespokeTimelineOptions = TIMELINE_OPTIONS.map(t => ({
+      label: t, select: this.setBespokeTimeline(t),
+      style: `font-size:12px;padding:8px 14px;border-radius:999px;cursor:pointer;border:1px solid ${s.bespokeTimeline === t ? '#15130F' : 'rgba(21,19,15,0.2)'};background:${s.bespokeTimeline === t ? '#15130F' : 'transparent'};color:${s.bespokeTimeline === t ? '#F6F2EA' : '#15130F'}`,
+    }));
+
+    return {
+      isHome: view === 'home', isPlp: view === 'plp', isPdp: view === 'pdp', isAbout: view === 'about', isLegal: view === 'legal', isCheckout: view === 'checkout',
+      genderLabel,
+      womenToggleStyle: pillStyle(s.gender === 'women'), menToggleStyle: pillStyle(s.gender === 'men'),
+      goHome: this.goHome, goAbout: this.goAbout, goLegal: this.goLegal, goCheckout: this.goCheckout, goPlpNew: this.goPlpNew, goHomeRunway: this.goHomeRunway, goPdpBespokeHint: this.goPdpBespokeHint,
+      setGenderWomen: this.setGenderWomen, setGenderMen: this.setGenderMen,
+      cartCount: s.cart.reduce((n, c) => n + c.qty, 0),
+      toggleChat: this.toggleChat, noop: this.noop,
+
+      heroSlides, heroDots, prevHero: this.prevHero, nextHero: this.nextHero,
+      isRunwayFilm, isRunwayLookbook, setRunwayFilm: this.setRunwayFilm, setRunwayLookbook: this.setRunwayLookbook,
+      lookbookToggleStyle: pillStyle(isRunwayLookbook), filmToggleStyle: pillStyle(isRunwayFilm), lookbookTiles,
+      homeProducts,
+
+      plpProducts, plpFilters, plpColors, plpCount: plpProducts.length,
+
+      product, pdpMedia, activeMedia, pdpColors, selectedColorName, pdpSizes, addToBag: this.addToBag,
+      openTryOn: this.openTryOn, openAdjustment: this.openAdjustment, openBespoke: this.openBespoke,
+      pdpTabs, toggleChatAboutProduct: this.toggleChatAboutProduct, reviews,
+
+      legalTabs, legalBody,
+
+      checkoutSteps, isStepBag: s.checkoutStep === 'bag', isStepDelivery: s.checkoutStep === 'delivery', isStepPayment: s.checkoutStep === 'payment', isStepConfirm: s.checkoutStep === 'confirm',
+      showSummary: s.checkoutStep !== 'confirm',
+      cartItems, promoCode: s.promoCode, setPromoCode: this.setPromoCode,
+      deliveryOptionsPickup, deliveryOptionsShip, goStepPayment: this.goStepPayment,
+      paymentOptions, placeOrder: this.placeOrder,
+      cartSubtotal, deliveryFee, cartTotal,
+
+      cookieVisible: s.cookieVisible, acceptCookies: this.acceptCookies, rejectCookies: this.rejectCookies,
+      chatOpen: s.chatOpen, chatMessages, chatQuickReplies, chatDraft: s.chatDraft, setChatDraft: this.setChatDraft, sendChatDraft: this.sendChatDraft,
+
+      modalOpen, isModalTryOn, isModalAdjustment, isModalBespoke, closeModal: this.closeModal,
+      tryOnMethods, tryOnStep: s.tryOnStep, tryOnMethodChosen: !!s.tryOnMethod,
+      tryOnGoStep1: this.tryOnGoStep(1), tryOnGoStep0: this.tryOnGoStep(0), submitTryOn: this.submitTryOn, tryOnSubmitted: s.tryOnSubmitted,
+      isTryOnStep0: s.tryOnStep === 0, isTryOnStep1: s.tryOnStep === 1,
+
+      adjustmentTypes, adjustmentNote: s.adjustmentNote, setAdjustmentNote: this.setAdjustmentNote, submitAdjustment: this.submitAdjustment, adjustmentSubmitted: s.adjustmentSubmitted, adjustmentNotSubmitted: !s.adjustmentSubmitted, adjustmentType: s.adjustmentType,
+
+      bespokeFabricOptions, bespokeTimelineOptions, bespokeNote: s.bespokeNote, setBespokeNote: this.setBespokeNote, submitBespoke: this.submitBespoke, bespokeSubmitted: s.bespokeSubmitted, bespokeNotSubmitted: !s.bespokeSubmitted,
+    };
+  }
+
+  openTryOn = () => this.setState({ modal: 'tryon', tryOnStep: 0, tryOnMethod: null, tryOnSubmitted: false });
+  openAdjustment = () => this.setState({ modal: 'adjustment', adjustmentSubmitted: false, adjustmentType: 'Hem length', adjustmentNote: '' });
+  openBespoke = () => this.setState({ modal: 'bespoke', bespokeSubmitted: false, bespokeFabric: 'Same as shown', bespokeTimeline: 'Standard (3-4 weeks)', bespokeNote: '' });
+  closeModal = () => this.setState({ modal: null });
+
+  selectTryOnMethod = (m) => () => this.setState({ tryOnMethod: m });
+  tryOnGoStep = (n) => () => this.setState({ tryOnStep: n });
+  submitTryOn = () => this.setState({ tryOnSubmitted: true });
+
+  setAdjustmentType = (t) => () => this.setState({ adjustmentType: t });
+  setAdjustmentNote = (e) => this.setState({ adjustmentNote: e.target.value });
+  submitAdjustment = () => this.setState({ adjustmentSubmitted: true });
+
+  setBespokeFabric = (f) => () => this.setState({ bespokeFabric: f });
+  setBespokeTimeline = (t) => () => this.setState({ bespokeTimeline: t });
+  setBespokeNote = (e) => this.setState({ bespokeNote: e.target.value });
+  submitBespoke = () => this.setState({ bespokeSubmitted: true });
+}
+
+</script>
+
+
+</body></html>
