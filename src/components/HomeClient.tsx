@@ -28,38 +28,57 @@ export default function HomeClient({ products, initialSlides, initialRunway, ini
   }, [gender]);
   
   // Hero Slider Config
-  const slides = initialSlides && initialSlides.length > 0 ? initialSlides : [
+  const rawSlides = initialSlides && initialSlides.length > 0 ? initialSlides : [
     {
       eyebrow: "Spring/Summer 2026",
       title: "Tailoring that moves with you",
       cta: "Shop Women",
+      link: "/products?gender=WOMEN",
       tone1: "#c9beac",
       tone2: "#8f8571",
       bgImage: "/images/hero_women.png",
-      genderFilter: "WOMEN"
+      genderFilter: "WOMEN",
+      active: true,
     },
     {
       eyebrow: "Runway Film",
       title: "The AW26 collection, in motion",
       cta: "Watch the Film",
+      link: "#runway-banner",
+      actionScroll: "runway-banner",
       tone1: "#1c2a24",
       tone2: "#0d1512",
       bgImage: "/images/hero_runway.png",
-      actionScroll: "runway-banner"
+      active: true,
     },
     {
       eyebrow: "For Him",
       title: "Modern silhouettes, Lagos-made",
       cta: "Shop Men",
+      link: "/products?gender=MEN",
       tone1: "#3a3936",
       tone2: "#171613",
       bgImage: "/images/hero_men.png",
-      genderFilter: "MEN"
+      genderFilter: "MEN",
+      active: true,
     }
   ];
 
+  // Only display slides that are marked active (fallback to raw if all deactivated)
+  const slides = rawSlides.filter((s: any) => s.active !== false).length > 0
+    ? rawSlides.filter((s: any) => s.active !== false)
+    : rawSlides;
+
   const handleSlideAction = (slide: any) => {
-    if (slide.genderFilter) {
+    if (slide.link) {
+      if (slide.link.startsWith("#")) {
+        const id = slide.link.replace("#", "");
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        router.push(slide.link);
+      }
+    } else if (slide.genderFilter) {
       router.push(`/products?gender=${slide.genderFilter}`);
     } else if (slide.actionScroll) {
       const el = document.getElementById(slide.actionScroll);

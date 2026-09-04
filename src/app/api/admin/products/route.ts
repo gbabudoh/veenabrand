@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     const slug = `${slugify(name)}-${Date.now().toString().slice(-4)}`;
 
-    const productColors = colors || [{ name: "Ivory", hex: "#e7ddc9" }];
+    const productColors = colors && colors.length > 0 ? colors : [{ name: "Ivory", hex: "#e7ddc9" }];
     const productMedia = media || [
       { type: "IMAGE", url: "/placeholder/front.jpg", label: "Front" }
     ];
@@ -74,8 +74,8 @@ export async function POST(req: NextRequest) {
         priceMinor: Number(priceMinor),
         colors: {
           create: productColors.map((c: any, i: number) => ({
-            name: c.name,
-            hex: c.hex,
+            name: (c.name || "Custom").trim(),
+            hex: (c.hex || "#000000").trim(),
             sortOrder: i,
           })),
         },
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
           create: ["XS", "S", "M", "L", "XL"].flatMap((size) =>
             productColors.map((c: any) => ({
               size,
-              colorName: c.name,
+              colorName: (c.name || "Custom").trim(),
               stock: 20, // default stock allocation
             }))
           ),
@@ -114,23 +114,99 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, name, description, fabricCare, shippingReturnsNote, gender, categoryId, priceMinor } = body;
+    const { id, name, description, fabricCare, shippingReturnsNote, gender, categoryId, priceMinor, colors } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Product id is required" }, { status: 400 });
     }
 
-    const updated = await db.product.update({
-      where: { id },
-      data: {
-        name,
-        description,
-        fabricCare,
-        shippingReturnsNote,
-        gender,
-        categoryId: categoryId || undefined,
-        priceMinor: priceMinor ? Number(priceMinor) : undefined,
-      },
+    const STANDARD_SIZES = ["XS", "S", "M", "L", "XL"];
+
+    const updated = await db.$transaction(async (tx) => {
+      // 1. Update basic product fields
+      const prod = await tx.product.update({
+        where: { id },
+        data: {
+          name,
+          description,
+          fabricCare,
+          shippingReturnsNote,
+          gender,
+          categoryId: categoryId || undefined,
+          priceMinor: priceMinor ? Number(priceMinor) : undefined,
+        },
+      });
+
+      // 2. Update colors if supplied
+      if (colors && Array.isArray(colors) && colors.length > 0) {
+        // Remove existing colors
+        await tx.productColor.deleteMany({
+          where: { productId: id },
+        });
+
+        // Insert updated colors
+        await tx.productColor.createMany({
+          data: colors.map((c: any, i: number) => ({
+            productId: id,
+            name: (c.name || "Custom").trim(),
+            hex: (c.hex || "#000000").trim(),
+            sortOrder: i,
+          })),
+        });
+
+        // 3. Synchronize variants
+        const existingVariants = await tx.productVariant.findMany({
+          where: { productId: id },
+        });
+
+        const activeColorNamesLower = colors.map((c: any) => (c.name || "").trim().toLowerCase());
+
+        // Create variants for new colors
+        const variantsToCreate: { productId: string; size: string; colorName: string; stock: number }[] = [];
+        for (const c of colors) {
+          const trimmedColor = (c.name || "Custom").trim();
+          for (const size of STANDARD_SIZES) {
+            const exists = existingVariants.some(
+              (v) => v.size === size && v.colorName.toLowerCase() === trimmedColor.toLowerCase()
+            );
+            if (!exists) {
+              variantsToCreate.push({
+                productId: id,
+                size,
+                colorName: trimmedColor,
+                stock: 20,
+              });
+            }
+          }
+        }
+
+        if (variantsToCreate.length > 0) {
+          await tx.productVariant.createMany({
+            data: variantsToCreate,
+          });
+        }
+
+        // Delete variants for removed colors
+        const removedVariantIds = existingVariants
+          .filter((v) => !activeColorNamesLower.includes(v.colorName.toLowerCase()))
+          .map((v) => v.id);
+
+        if (removedVariantIds.length > 0) {
+          await tx.productVariant.deleteMany({
+            where: { id: { in: removedVariantIds } },
+          });
+        }
+      }
+
+      return tx.product.findUnique({
+        where: { id },
+        include: {
+          colors: { orderBy: { sortOrder: "asc" } },
+          variants: true,
+          media: { orderBy: { sortOrder: "asc" } },
+          category: true,
+        },
+      });
     });
 
     return NextResponse.json({ success: true, product: updated });

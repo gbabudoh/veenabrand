@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import "./globals.css";
 import { StoreProvider } from "@/lib/StoreContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CookieBanner from "@/components/CookieBanner";
-import AskVeenaChat from "@/components/AskVeenaChat";
-import Modals from "@/components/Modals";
+import StorefrontShell from "@/components/StorefrontShell";
 import { getNavCategories } from "@/lib/categories";
-import { getMegaMenuConfig } from "@/lib/home-data";
-import { cookies } from "next/headers";
+import { getMegaMenuConfig, getFooterConfig } from "@/lib/home-data";
+import { cookies, headers } from "next/headers";
 import { GENDER_COOKIE, resolveGender } from "@/lib/gender";
 
 export const metadata: Metadata = {
@@ -23,10 +18,26 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // The navbar is driven by the Category table and dynamic mega menu config
-  const [categories, megaMenuConfig] = await Promise.all([
+  const headersList = headers();
+  const currentPath = headersList.get("x-pathname") || "";
+  const isAdmin = currentPath.startsWith("/admin");
+
+  // If serving an admin route, completely bypass StorefrontShell, Footer, and customer chrome
+  if (isAdmin) {
+    return (
+      <html lang="en">
+        <body>
+          {children}
+        </body>
+      </html>
+    );
+  }
+
+  // Navbar and footer are driven by Category table, dynamic mega menu config, and footer config
+  const [categories, megaMenuConfig, footerConfig] = await Promise.all([
     getNavCategories(),
     getMegaMenuConfig(),
+    getFooterConfig(),
   ]);
 
   // Seeding the provider from the cookie means the server renders the same
@@ -37,18 +48,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en">
       <body>
         <StoreProvider initialGender={initialGender}>
-          <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
-            <Suspense fallback={<div style={{ height: "109px", background: "rgba(246, 242, 234, 0.92)" }}></div>}>
-              <Header categories={categories} megaMenuConfig={megaMenuConfig} />
-            </Suspense>
-            <main style={{ flex: 1 }}>
-              {children}
-            </main>
-            <Footer />
-            <CookieBanner />
-            <AskVeenaChat />
-            <Modals />
-          </div>
+          <StorefrontShell
+            categories={categories}
+            megaMenuConfig={megaMenuConfig}
+            footerConfig={footerConfig}
+          >
+            {children}
+          </StorefrontShell>
         </StoreProvider>
       </body>
     </html>

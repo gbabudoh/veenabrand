@@ -5,22 +5,24 @@ const prisma = new PrismaClient();
 
 async function main() {
   // 1. Seed super admin user
-  const adminPasswordHash = hashPassword("password2328");
+  const adminPasswordHash = hashPassword("@yLetMe1nnow");
   await prisma.user.upsert({
-    where: { email: "superadmin@veena.fashion" },
+    where: { email: "superadmin@veenafashion.com" },
     update: {
       passwordHash: adminPasswordHash,
       role: "SUPERADMIN",
+      username: "superadmin",
+      name: "Super Admin",
     },
     create: {
-      email: "superadmin@veena.fashion",
+      email: "superadmin@veenafashion.com",
       username: "superadmin",
       name: "Super Admin",
       passwordHash: adminPasswordHash,
       role: "SUPERADMIN",
     },
   });
-  console.log("Seeded Super Admin credentials (username: superadmin, password: password2328)");
+  console.log("Seeded Super Admin credentials (email: superadmin@veenafashion.com, username: superadmin)");
 
   // 2. Seed default dynamic homepage layouts configuration
   const defaultSlides = [

@@ -12,9 +12,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
     }
 
-    // Find the user by username
-    const user = await db.user.findUnique({
-      where: { username },
+    const cleanIdentifier = username.trim();
+
+    // Find the user by username or email
+    const user = await db.user.findFirst({
+      where: {
+        OR: [
+          { username: cleanIdentifier },
+          { email: cleanIdentifier },
+          { email: cleanIdentifier.toLowerCase() },
+        ],
+      },
     });
 
     if (!user || !user.passwordHash) {
