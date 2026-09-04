@@ -56,15 +56,13 @@ export default function AdminLoginPage() {
         boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
       }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{
-            fontFamily: "var(--font-serif)",
-            fontSize: "28px",
-            color: "#F6F2EA",
-            letterSpacing: "0.04em",
-            fontWeight: 500,
-          }}>
-            VEENA
-          </div>
+          <img
+            src="/images/logo.png"
+            alt="Veena"
+            width={78}
+            height={76}
+            style={{ height: "76px", width: "auto", display: "block", margin: "0 auto" }}
+          />
           <div style={{
             fontSize: "11px",
             color: "rgba(246, 242, 234, 0.5)",

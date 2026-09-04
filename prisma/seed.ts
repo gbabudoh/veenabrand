@@ -120,7 +120,27 @@ async function main() {
     },
   });
 
-  // 5. Seed default products
+  // 5. Seed the starter category taxonomy. Real categories are managed in the
+  // admin at /admin/categories — these exist only so the sample products link
+  // to something on a fresh database.
+  const seedCategories = [
+    { name: "New Arrival", slug: "new-arrival" },
+    { name: "Runway", slug: "runway" },
+    { name: "Bespoke Favorite", slug: "bespoke-favorite" },
+  ];
+
+  const categoryIdBySlug = new Map<string, string>();
+  for (const [i, c] of seedCategories.entries()) {
+    const category = await prisma.category.upsert({
+      where: { slug: c.slug },
+      update: {},
+      create: { name: c.name, slug: c.slug, sortOrder: i },
+    });
+    categoryIdBySlug.set(c.slug, category.id);
+  }
+  console.log("Seeded", seedCategories.length, "categories");
+
+  // 6. Seed default products
   const products = [
     {
       slug: "silk-wrap-blouse",
@@ -191,12 +211,16 @@ async function main() {
   ];
 
   for (const p of products) {
-    const { colors, ...rest } = p;
+    const { colors, category, ...rest } = p;
+    const categoryId = categoryIdBySlug.get(
+      category.toLowerCase().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-")
+    );
     const product = await prisma.product.upsert({
       where: { slug: p.slug },
       update: {},
       create: {
         ...rest,
+        categoryId,
         colors: { create: colors.map((c, i) => ({ ...c, sortOrder: i })) },
         variants: {
           create: ["XS", "S", "M", "L", "XL"].flatMap((size) =>

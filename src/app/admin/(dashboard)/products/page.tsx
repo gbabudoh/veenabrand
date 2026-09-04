@@ -23,6 +23,13 @@ interface ProductMedia {
   label: string | null;
 }
 
+interface CategoryOption {
+  id: string;
+  name: string;
+  parentId: string | null;
+  active: boolean;
+}
+
 interface Product {
   id: string;
   slug: string;
@@ -31,7 +38,8 @@ interface Product {
   fabricCare: string;
   shippingReturnsNote: string;
   gender: string;
-  category: string;
+  categoryId: string | null;
+  category: { id: string; name: string; slug: string } | null;
   priceMinor: number;
   colors: ProductColor[];
   media: ProductMedia[];
@@ -51,7 +59,8 @@ export default function AdminProductsPage() {
   const [fabricCare, setFabricCare] = useState("");
   const [shippingReturnsNote, setShippingReturnsNote] = useState("");
   const [gender, setGender] = useState("WOMEN");
-  const [category, setCategory] = useState("New Arrival");
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [priceNaira, setPriceNaira] = useState("");
   
   // Custom Color inputs state for creation
@@ -72,8 +81,21 @@ export default function AdminProductsPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/admin/categories");
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data.categories);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -102,7 +124,7 @@ export default function AdminProductsPage() {
     setFabricCare("");
     setShippingReturnsNote("");
     setGender("WOMEN");
-    setCategory("New Arrival");
+    setCategoryId(categories[0]?.id || "");
     setPriceNaira("");
     setColorNameInput("Emerald");
     setColorHexInput("#1F5C42");
@@ -117,7 +139,7 @@ export default function AdminProductsPage() {
     setFabricCare(p.fabricCare);
     setShippingReturnsNote(p.shippingReturnsNote);
     setGender(p.gender);
-    setCategory(p.category);
+    setCategoryId(p.categoryId || "");
     setPriceNaira((p.priceMinor / 100).toString());
   };
 
@@ -136,7 +158,7 @@ export default function AdminProductsPage() {
             fabricCare,
             shippingReturnsNote,
             gender,
-            category,
+            categoryId,
             priceMinor,
             colors: [{ name: colorNameInput, hex: colorHexInput }],
             media: [
@@ -168,7 +190,7 @@ export default function AdminProductsPage() {
             fabricCare,
             shippingReturnsNote,
             gender,
-            category,
+            categoryId,
             priceMinor,
           }),
         });
@@ -251,8 +273,23 @@ export default function AdminProductsPage() {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "11px", color: "rgba(246,242,234,0.5)", marginBottom: "6px", textTransform: "uppercase" }}>Showcase Category</label>
-              <input type="text" required value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. New Arrival, Runway" style={{ width: "100%", background: "#0F0E0B", border: "1px solid rgba(246,242,234,0.15)", color: "#F6F2EA", padding: "10px 12px", fontSize: "13.5px", borderRadius: "2px", outline: "none" }} />
+              <label style={{ display: "block", fontSize: "11px", color: "rgba(246,242,234,0.5)", marginBottom: "6px", textTransform: "uppercase" }}>Category</label>
+              <select required value={categoryId} onChange={(e) => setCategoryId(e.target.value)} style={{ width: "100%", background: "#0F0E0B", border: "1px solid rgba(246,242,234,0.15)", color: "#F6F2EA", padding: "10px 12px", fontSize: "13.5px", borderRadius: "2px", cursor: "pointer" }}>
+                <option value="">— Select a category —</option>
+                {categories.filter((c) => !c.parentId).map((parent) => (
+                  <React.Fragment key={parent.id}>
+                    <option value={parent.id}>{parent.name}{parent.active ? "" : " (hidden)"}</option>
+                    {categories.filter((c) => c.parentId === parent.id).map((child) => (
+                      <option key={child.id} value={child.id}>&nbsp;&nbsp;&nbsp;{child.name}{child.active ? "" : " (hidden)"}</option>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </select>
+              {categories.length === 0 && (
+                <div style={{ fontSize: "11.5px", color: "rgba(229,121,63,0.9)", marginTop: "6px" }}>
+                  No categories yet — add them under Categories first.
+                </div>
+              )}
             </div>
 
             <div>
@@ -323,7 +360,7 @@ export default function AdminProductsPage() {
                     <td style={{ padding: "14px 10px", color: "rgba(246,242,234,0.6)" }}>{p.gender}</td>
                     <td style={{ padding: "14px 10px" }}>
                       <span style={{ background: "rgba(246,242,234,0.05)", padding: "2px 8px", borderRadius: "999px", fontSize: "11.5px" }}>
-                        {p.category}
+                        {p.category?.name || "Uncategorised"}
                       </span>
                     </td>
                     <td style={{ padding: "14px 10px" }}>

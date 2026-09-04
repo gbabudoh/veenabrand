@@ -1,28 +1,11 @@
-import { db } from "@/lib/db";
-import HomeClient from "@/components/HomeClient";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { GENDER_COOKIE, resolveGender, genderHome } from "@/lib/gender";
 
-export default async function HomePage() {
-  // Fetch all products from the SQLite database with their colors and media
-  const products = await db.product.findMany({
-    include: {
-      media: { orderBy: { sortOrder: "asc" } },
-      colors: { orderBy: { sortOrder: "asc" } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  // Query dynamic homepage config keys
-  const slidesConfig = await db.homepageConfig.findUnique({ where: { key: "hero_slides" } });
-  const runwayConfig = await db.homepageConfig.findUnique({ where: { key: "runway_switch" } });
-
-  const initialSlides = slidesConfig ? JSON.parse(slidesConfig.value) : null;
-  const initialRunway = runwayConfig ? JSON.parse(runwayConfig.value) : null;
-
-  return (
-    <HomeClient
-      products={products}
-      initialSlides={initialSlides}
-      initialRunway={initialRunway}
-    />
-  );
+// "/" is a doorway, not a page. Every visitor lands on a real, shareable
+// segment URL (/women or /men), picked from their saved preference so a
+// returning shopper goes straight back to the side of the store they use.
+export default function RootPage() {
+  const saved = cookies().get(GENDER_COOKIE)?.value;
+  redirect(genderHome(resolveGender(saved)));
 }

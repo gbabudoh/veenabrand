@@ -24,6 +24,29 @@ model User {
   cart          Cart?
 }
 
+// Navigation + merchandising taxonomy. Self-referencing so a category can nest
+// one or more levels deep (e.g. Women > Dresses > Maxi). Managed from /admin/categories.
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  gender      String?    // "WOMEN" | "MEN" | null = shown under both
+  parentId    String?
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryTree")
+  sortOrder   Int        @default(0)
+  active      Boolean    @default(true)  // inactive hides it everywhere on the storefront
+  showInNav   Boolean    @default(true)  // hide from the navbar without deactivating it
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  products    Product[]
+
+  @@index([parentId, sortOrder])
+  @@index([gender, active])
+}
+
 model Product {
   id          String    @id @default(cuid())
   slug        String    @unique
@@ -32,7 +55,8 @@ model Product {
   fabricCare  String
   shippingReturnsNote String
   gender      String
-  category    String    // e.g. "New Arrival", "Runway", "Bespoke Favorite"
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   priceMinor  Int        // store price in kobo (NGN minor unit) to avoid float errors
   currency    String     @default("NGN")
   createdAt   DateTime  @default(now())
@@ -45,7 +69,7 @@ model Product {
   cartItems   CartItem[]
   orderItems  OrderItem[]
 
-  @@index([gender, category])
+  @@index([gender, categoryId])
 }
 
 model ProductMedia {

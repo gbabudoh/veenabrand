@@ -10,14 +10,14 @@ async function getOrCreateCart() {
   let token = jar.get(GUEST_COOKIE)?.value;
 
   let cart = token
-    ? await db.cart.findUnique({ where: { guestToken: token }, include: { items: { include: { product: true } } } })
+    ? await db.cart.findUnique({ where: { guestToken: token }, include: { items: { include: { product: { include: { category: { select: { id: true, name: true, slug: true } } } } } } } })
     : null;
 
   if (!cart) {
     token = crypto.randomUUID();
     cart = await db.cart.create({
       data: { guestToken: token },
-      include: { items: { include: { product: true } } },
+      include: { items: { include: { product: { include: { category: { select: { id: true, name: true, slug: true } } } } } } },
     });
     jar.set(GUEST_COOKIE, token, { httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
   }

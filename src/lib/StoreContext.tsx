@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { persistGender } from "@/lib/gender";
 
 export interface CartItem {
   id: string;
@@ -16,7 +17,7 @@ export interface CartItem {
     description: string;
     priceMinor: number;
     currency: string;
-    category: string;
+    category?: { name: string; slug: string } | null;
   };
 }
 
@@ -63,8 +64,14 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [gender, setGenderState] = useState<"WOMEN" | "MEN">("WOMEN");
+export function StoreProvider({
+  children,
+  initialGender = "WOMEN",
+}: {
+  children: React.ReactNode;
+  initialGender?: "WOMEN" | "MEN";
+}) {
+  const [gender, setGenderState] = useState<"WOMEN" | "MEN">(initialGender);
   const [cart, setCart] = useState<Cart | null>(null);
   const [loadingCart, setLoadingCart] = useState<boolean>(true);
   
@@ -86,27 +93,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // cookie banner states
   const [cookieVisible, setCookieVisible] = useState(false);
 
-  // Load gender preference, cart and cookie consent on mount
+  // Load cart and cookie consent on mount. Gender is NOT read here — it arrives
+  // from the server via initialGender, which is what keeps the first paint correct.
   useEffect(() => {
-    // 1. Gender preference
-    const savedGender = localStorage.getItem("veena_gender") as "WOMEN" | "MEN";
-    if (savedGender === "WOMEN" || savedGender === "MEN") {
-      setGenderState(savedGender);
-    }
-
-    // 2. Cookie consent
+    // 1. Cookie consent
     const cookieConsent = localStorage.getItem("veena_cookie_consent");
     if (!cookieConsent) {
       setCookieVisible(true);
     }
 
-    // 3. Cart loading
+    // 2. Cart loading
     refreshCart();
   }, []);
 
+  useEffect(() => {
+    setGenderState(initialGender);
+  }, [initialGender]);
+
   const setGender = (g: "WOMEN" | "MEN") => {
     setGenderState(g);
-    localStorage.setItem("veena_gender", g);
+    persistGender(g);
   };
 
   const refreshCart = async () => {

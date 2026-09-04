@@ -13,7 +13,7 @@ interface ProductDetailClientProps {
     fabricCare: string;
     shippingReturnsNote: string;
     priceMinor: number;
-    category: string;
+    category: { id: string; name: string; slug: string } | null;
     gender: string;
     colors: { name: string; hex: string }[];
     media: { url: string; label: string | null; type: string }[];
@@ -78,7 +78,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     <div className="container-max" style={{ padding: "36px 24px 110px" }}>
       {/* Breadcrumbs */}
       <div style={{ fontSize: "12px", color: "rgba(21, 19, 15, 0.5)", marginBottom: "24px", letterSpacing: "0.02em" }}>
-        {product.gender === "WOMEN" ? "Women" : "Men"} / {product.category} / {product.name}
+        {product.gender === "WOMEN" ? "Women" : "Men"} / {product.category?.name || "All Pieces"} / {product.name}
       </div>
 
       {/* Main PDP Grid */}

@@ -9,6 +9,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
       media: { orderBy: { sortOrder: "asc" } },
       colors: { orderBy: { sortOrder: "asc" } },
       reviews: { orderBy: { createdAt: "desc" } },
+      category: { select: { id: true, name: true, slug: true } },
     },
   });
 

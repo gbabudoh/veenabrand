@@ -16,6 +16,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
     { href: "/admin", label: "Dashboard", icon: "📊" },
     { href: "/admin/orders", label: "Orders", icon: "📦" },
     { href: "/admin/products", label: "Products", icon: "👗" },
+    { href: "/admin/categories", label: "Categories", icon: "🗂️" },
     { href: "/admin/homepage", label: "Homepage Banners", icon: "🖼️" },
     { href: "/admin/discounts", label: "Promo Codes", icon: "🎟️" },
     { href: "/admin/users", label: "Users & Staff", icon: "👥" },
@@ -46,9 +47,13 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
         <div>
           {/* Logo Brand */}
           <div style={{ paddingLeft: "10px", marginBottom: "36px" }}>
-            <div style={{ fontFamily: "var(--font-serif)", fontSize: "22px", letterSpacing: "0.05em", fontWeight: 600 }}>
-              VEENA
-            </div>
+            <img
+              src="/images/logo.png"
+              alt="Veena"
+              width={57}
+              height={56}
+              style={{ height: "56px", width: "auto", display: "block" }}
+            />
             <div style={{ fontSize: "9.5px", color: "var(--color-emerald)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, marginTop: "2px" }}>
               Admin Panel
             </div>

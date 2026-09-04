@@ -187,7 +187,7 @@ export default function CheckoutPage() {
                         width: "96px",
                         height: "120px",
                         borderRadius: "3px",
-                        background: `linear-gradient(160deg, ${item.product.category === "Runway" ? "#1F5C42" : "#e7ddc9"} 0%, #15130F 180%)`,
+                        background: `linear-gradient(160deg, ${item.product.category?.slug === "runway" ? "#1F5C42" : "#e7ddc9"} 0%, #15130F 180%)`,
                         border: "1px solid rgba(21, 19, 15, 0.1)"
                       }}></div>
                       <div>

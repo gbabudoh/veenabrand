@@ -23,15 +23,13 @@ export default function Footer() {
           marginBottom: "56px"
         }}>
           <div>
-            <div style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "22px",
-              marginBottom: "14px",
-              fontWeight: 600,
-              letterSpacing: "0.06em"
-            }}>
-              VEENA
-            </div>
+            <img
+              src="/images/logo.png"
+              alt="Veena"
+              width={66}
+              height={64}
+              style={{ height: "64px", width: "auto", display: "block", marginBottom: "14px" }}
+            />
             <p style={{
               fontSize: "13px",
               lineHeight: 1.7,

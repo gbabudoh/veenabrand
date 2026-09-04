@@ -10,7 +10,7 @@ interface ProductCardProps {
     id: string;
     slug: string;
     name: string;
-    category: string;
+    category?: { name: string; slug: string } | null;
     priceMinor: number;
     colors: { name: string; hex: string }[];
     media: { url: string; label: string }[];
@@ -60,7 +60,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           fontWeight: 500,
           border: "1px solid rgba(21, 19, 15, 0.08)"
         }}>
-          {product.category}
+          {product.category?.name}
         </span>
 
         {/* Labeled outline showing product colors details */}

@@ -26,5 +26,6 @@ lerna-debug.log*
 # Databases and OS files
 prisma/dev.db
 prisma/dev.db-journal
+prisma/.category-snapshot.json
 .DS_Store
 Thumbs.db

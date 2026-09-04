@@ -24,7 +24,8 @@ export async function GET(req: NextRequest) {
       include: {
         colors: { orderBy: { sortOrder: "asc" } },
         media: { orderBy: { sortOrder: "asc" } },
-        variants: true
+        variants: true,
+        category: { select: { id: true, name: true, slug: true } }
       },
       orderBy: { createdAt: "desc" },
     });
@@ -43,10 +44,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, description, fabricCare, shippingReturnsNote, gender, category, priceMinor, colors, media } = body;
+    const { name, description, fabricCare, shippingReturnsNote, gender, categoryId, priceMinor, colors, media } = body;
 
-    if (!name || !priceMinor || !gender || !category) {
+    if (!name || !priceMinor || !gender || !categoryId) {
       return NextResponse.json({ error: "Name, price, gender, and category are required" }, { status: 400 });
+    }
+
+    const categoryExists = await db.category.findUnique({ where: { id: categoryId } });
+    if (!categoryExists) {
+      return NextResponse.json({ error: "Selected category no longer exists" }, { status: 400 });
     }
 
     const slug = `${slugify(name)}-${Date.now().toString().slice(-4)}`;
@@ -64,7 +70,7 @@ export async function POST(req: NextRequest) {
         fabricCare: fabricCare || "",
         shippingReturnsNote: shippingReturnsNote || "",
         gender,
-        category,
+        categoryId,
         priceMinor: Number(priceMinor),
         colors: {
           create: productColors.map((c: any, i: number) => ({
@@ -108,7 +114,7 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, name, description, fabricCare, shippingReturnsNote, gender, category, priceMinor } = body;
+    const { id, name, description, fabricCare, shippingReturnsNote, gender, categoryId, priceMinor } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Product id is required" }, { status: 400 });
@@ -122,7 +128,7 @@ export async function PATCH(req: NextRequest) {
         fabricCare,
         shippingReturnsNote,
         gender,
-        category,
+        categoryId: categoryId || undefined,
         priceMinor: priceMinor ? Number(priceMinor) : undefined,
       },
     });

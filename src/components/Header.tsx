@@ -1,219 +1,815 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useStore } from "@/lib/StoreContext";
+import type { NavCategory } from "@/lib/category-utils";
 
-export default function Header() {
+/* --------------------------------------------------------------------------
+   ENTERPRISE MINIMALIST SVG ICON SUITE
+   -------------------------------------------------------------------------- */
+function SearchIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7.5" />
+      <line x1="21" y1="21" x2="16.5" y2="16.5" />
+    </svg>
+  );
+}
+
+function UserIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 21v-1.5a4.5 4.5 0 0 0-4.5-4.5h-5A4.5 4.5 0 0 0 5 19.5V21" />
+      <circle cx="12" cy="7.5" r="4" />
+    </svg>
+  );
+}
+
+function BagIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 3h12l2 6v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9l2-6z" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <path d="M16 13a4 4 0 0 1-8 0" />
+    </svg>
+  );
+}
+
+function SparkleIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 0C12.4 6.6 17.4 11.6 24 12C17.4 12.4 12.4 17.4 12 24C11.6 17.4 6.6 12.4 0 12C6.6 11.6 11.6 6.6 12 0Z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="9"
+      height="9"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+/* --------------------------------------------------------------------------
+   ENTERPRISE MEGA MENU TAXONOMY DEFINITION
+   -------------------------------------------------------------------------- */
+interface MenuItem {
+  name: string;
+  href: string;
+  highlight?: boolean;
+}
+
+interface MenuColumn {
+  title: string;
+  items: MenuItem[];
+}
+
+interface Department {
+  id: string;
+  name: string;
+  href: string;
+  overviewLabel: string;
+  columns: MenuColumn[];
+  editorial: {
+    eyebrow: string;
+    title: string;
+    image: string;
+    href: string;
+    cta: string;
+  };
+}
+
+const MEGA_DEPARTMENTS: Department[] = [
+  {
+    id: "women",
+    name: "Women",
+    href: "/products?gender=WOMEN",
+    overviewLabel: "All Women's Collection",
+    columns: [
+      {
+        title: "Separates & Tops",
+        items: [
+          { name: "Tops", href: "/products?gender=WOMEN&category=women-tops" },
+          { name: "Shirts", href: "/products?gender=WOMEN&category=women-shirts" },
+          { name: "Trousers", href: "/products?gender=WOMEN&category=women-trousers" },
+          { name: "Shorts", href: "/products?gender=WOMEN&category=women-shorts" },
+          { name: "Skirts", href: "/products?gender=WOMEN&category=women-skirts" },
+        ],
+      },
+      {
+        title: "Dresses & Atelier",
+        items: [
+          { name: "Dresses", href: "/products?gender=WOMEN&category=women-dresses" },
+          { name: "Bubu", href: "/products?gender=WOMEN&category=women-bubu", highlight: true },
+          { name: "Two Piece Sets", href: "/products?gender=WOMEN&category=women-two-piece-sets" },
+          { name: "Suits", href: "/products?gender=WOMEN&category=women-suits" },
+          { name: "Scarves", href: "/products?gender=WOMEN&category=women-scarves" },
+        ],
+      },
+    ],
+    editorial: {
+      eyebrow: "Signature Atelier",
+      title: "The Bubu Silhouette & Hand-Woven Silks",
+      image: "/images/hero_women.png",
+      href: "/products?gender=WOMEN&category=women-bubu",
+      cta: "Explore Atelier Women",
+    },
+  },
+  {
+    id: "men",
+    name: "Men",
+    href: "/products?gender=MEN",
+    overviewLabel: "All Men's Collection",
+    columns: [
+      {
+        title: "Tailoring & Sets",
+        items: [
+          { name: "Suits", href: "/products?gender=MEN&category=men-suits" },
+          { name: "Two Piece Set", href: "/products?gender=MEN&category=men-two-piece-set" },
+          { name: "Trousers", href: "/products?gender=MEN&category=men-trousers" },
+        ],
+      },
+      {
+        title: "Casuals & Tops",
+        items: [
+          { name: "Tops", href: "/products?gender=MEN&category=men-tops" },
+          { name: "Shirts", href: "/products?gender=MEN&category=men-shirts" },
+          { name: "Shorts", href: "/products?gender=MEN&category=men-shorts" },
+        ],
+      },
+    ],
+    editorial: {
+      eyebrow: "Atelier Tailoring",
+      title: "Architectural Precision & Modern Cuts",
+      image: "/images/hero_men.png",
+      href: "/products?gender=MEN",
+      cta: "Explore Atelier Men",
+    },
+  },
+  {
+    id: "accessories",
+    name: "Accessories",
+    href: "/products?category=accessories",
+    overviewLabel: "All Accessories",
+    columns: [
+      {
+        title: "Adornments & Jewelry",
+        items: [
+          { name: "Earrings", href: "/products?category=earrings" },
+          { name: "Necklaces", href: "/products?category=necklaces" },
+        ],
+      },
+      {
+        title: "Leather & Footwear",
+        items: [
+          { name: "Bags", href: "/products?category=bags" },
+          { name: "Sleepers", href: "/products?category=sleepers" },
+        ],
+      },
+    ],
+    editorial: {
+      eyebrow: "Finishing Touches",
+      title: "Handcrafted Adornments & Leather Goods",
+      image: "/images/hero_runway.png",
+      href: "/products?category=accessories",
+      cta: "Discover Accessories",
+    },
+  },
+  {
+    id: "lifestyle",
+    name: "Lifestyle",
+    href: "/products?category=lifestyle",
+    overviewLabel: "All Home & Living",
+    columns: [
+      {
+        title: "Bedding & Sanctuary",
+        items: [
+          { name: "Pillows", href: "/products?category=pillows" },
+          { name: "Sheets", href: "/products?category=sheets" },
+          { name: "Throws", href: "/products?category=throws" },
+        ],
+      },
+      {
+        title: "Living & Dining",
+        items: [
+          { name: "Candles", href: "/products?category=candles" },
+          { name: "Flower Vase", href: "/products?category=flower-vase" },
+          { name: "Tablemats", href: "/products?category=tablemats" },
+          { name: "Chair Covers", href: "/products?category=chair-covers" },
+          { name: "Home Accessories", href: "/products?category=home-accessories" },
+        ],
+      },
+    ],
+    editorial: {
+      eyebrow: "Living with Veena",
+      title: "Artisanal Comfort for Inspired Living",
+      image: "/images/atelier.png",
+      href: "/products?category=lifestyle",
+      cta: "Explore Lifestyle",
+    },
+  },
+];
+
+import type { MegaMenuConfig } from "@/lib/home-data";
+
+interface HeaderProps {
+  categories?: NavCategory[];
+  megaMenuConfig?: MegaMenuConfig | null;
+}
+
+export default function Header({ megaMenuConfig }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { gender, setGender, cart, toggleChat } = useStore();
+  const { cart, toggleChat } = useStore();
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
 
   const cartCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-  const handleGenderChange = (newGender: "WOMEN" | "MEN") => {
-    setGender(newGender);
-    
-    // If we're on the products page, update the query parameter to match
-    if (pathname === "/products") {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("gender", newGender);
-      router.push(`/products?${params.toString()}`);
+  // Merge admin-configured overrides (editorial card, custom column titles)
+  const departments = React.useMemo(() => {
+    return MEGA_DEPARTMENTS.map((dept) => {
+      const override = megaMenuConfig?.[dept.id];
+      if (!override) return dept;
+      return {
+        ...dept,
+        overviewLabel: override.overviewLabel || dept.overviewLabel,
+        columns: dept.columns.map((col, idx) => ({
+          ...col,
+          title: (idx === 0 ? override.col1Title : override.col2Title) || col.title,
+        })),
+        editorial: {
+          ...dept.editorial,
+          ...(override.editorial || {}),
+        },
+      };
+    });
+  }, [megaMenuConfig]);
+
+  // Hover handlers with smooth intentional buffer
+  const handleMenuEnter = (menuId: string) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
     }
+    setActiveMegaMenu(menuId);
   };
 
-  const pillStyle = (active: boolean) => ({
-    border: "none",
-    padding: "9px 20px",
-    fontSize: "12px",
-    letterSpacing: "0.04em",
-    textTransform: "uppercase" as const,
-    cursor: "pointer",
-    background: active ? "#15130F" : "transparent",
-    color: active ? "#F6F2EA" : "#15130F",
-    borderRadius: "999px",
-    fontWeight: 500,
-  });
+  const handleMenuLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveMegaMenu(null);
+    }, 220);
+  };
+
+  // Handle Search Submission
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchOpen(false);
+  };
+
+  // Focus input when search bar opens
+  useEffect(() => {
+    if (searchOpen) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 60);
+    }
+  }, [searchOpen]);
+
+  // Close the drawer & dropdowns whenever navigation happens
+  useEffect(() => {
+    setDrawerOpen(false);
+    setActiveMegaMenu(null);
+    setSearchOpen(false);
+  }, [pathname, searchParams]);
+
+  // Lock the page behind the open drawer
+  useEffect(() => {
+    document.body.classList.toggle("vn-scroll-locked", drawerOpen);
+    return () => document.body.classList.remove("vn-scroll-locked");
+  }, [drawerOpen]);
+
+  // Escape closes whichever layer is open
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setDrawerOpen(false);
+      setActiveMegaMenu(null);
+      setSearchOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Click outside header closes mega menu
+  useEffect(() => {
+    if (!activeMegaMenu) return;
+    const onClick = (e: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setActiveMegaMenu(null);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [activeMegaMenu]);
 
   return (
     <>
       {/* ANNOUNCEMENT BAR */}
-      <div style={{
-        background: "#15130F",
-        color: "#F6F2EA",
-        textAlign: "center",
-        padding: "9px 16px",
-        fontSize: "11px",
-        letterSpacing: "0.14em",
-        textTransform: "uppercase",
-        fontWeight: 400
-      }}>
-        Complimentary Lagos delivery on orders over ₦150,000 &nbsp;·&nbsp; Bespoke atelier now booking for December
+      <div className="vn-announce">
+        <span className="vn-announce__full">
+          Complimentary Lagos delivery on orders over ₦150,000 &nbsp;·&nbsp; Bespoke atelier now booking for December
+        </span>
+        <span className="vn-announce__short">
+          Free Lagos delivery over ₦150,000
+        </span>
       </div>
 
-      {/* NAVIGATION BAR */}
-      <header style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 40,
-        background: "rgba(246, 242, 234, 0.92)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        borderBottom: "1px solid rgba(21, 19, 15, 0.1)"
-      }}>
-        <div className="container-max" style={{
-          padding: "16px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "14px",
-          flexWrap: "wrap",
-        }}>
-          {/* Logo and Nav Links */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "18px",
-            flexWrap: "wrap",
-            minWidth: 0
-          }}>
-            <Link href="/" style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "22px",
-              letterSpacing: "0.06em",
-              fontWeight: 600,
-              flexShrink: 0,
-              color: "#15130F"
-            }}>
-              VEENA
-            </Link>
-            
-            <nav style={{
-              display: "flex",
-              gap: "14px",
-              alignItems: "center",
-              flexWrap: "wrap"
-            }}>
-              {/* Gender Toggle Pill */}
-              <div style={{
-                display: "flex",
-                border: "1px solid rgba(21, 19, 15, 0.18)",
-                borderRadius: "999px",
-                overflow: "hidden",
-                flexShrink: 0,
-                background: "transparent"
-              }}>
-                <button
-                  onClick={() => handleGenderChange("WOMEN")}
-                  style={pillStyle(gender === "WOMEN")}
-                >
-                  Women
-                </button>
-                <button
-                  onClick={() => handleGenderChange("MEN")}
-                  style={pillStyle(gender === "MEN")}
-                >
-                  Men
-                </button>
-              </div>
+      {/* ENTERPRISE NAVIGATION HEADER WITH MEGA MENU */}
+      <header
+        className="vn-header"
+        data-search-open={searchOpen}
+        data-mega-open={!!activeMegaMenu}
+        ref={headerRef}
+      >
+        <div className="container-max vn-header__inner">
+          {/* ZONE 1: BRAND LOGO */}
+          <div className="vn-header__zone vn-header__zone--left">
+            {/* Mobile menu trigger */}
+            <button
+              type="button"
+              className="vn-burger"
+              data-open={drawerOpen}
+              aria-label={drawerOpen ? "Close menu" : "Open menu"}
+              aria-expanded={drawerOpen}
+              onClick={() => setDrawerOpen((v) => !v)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
 
-              <Link
-                href={`/products?gender=${gender}`}
-                style={{
-                  fontSize: "11.5px",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  color: "#15130F",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                New Arrivals
-              </Link>
-              <Link
-                href="/#runway-banner"
-                style={{
-                  fontSize: "11.5px",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  color: "#15130F",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                Runway
-              </Link>
-              <Link
-                href="/products/signature-agbada-set"
-                style={{
-                  fontSize: "11.5px",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  color: "#15130F",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                Bespoke
-              </Link>
-              <Link
-                href="/about"
-                style={{
-                  fontSize: "11.5px",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  color: "#15130F",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                About
-              </Link>
-            </nav>
+            <Link href="/" className="vn-logo" aria-label="Veena — home">
+              <img src="/images/logo.png" alt="Veena" width={53} height={52} />
+            </Link>
           </div>
 
-          {/* Action Utilities */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-            flexWrap: "wrap",
-            flexShrink: 0
-          }}>
-            <span
+          {/* ZONE 2: CENTER MEGA MENU NAVIGATION */}
+          <nav className="vn-header__zone vn-header__zone--center vn-nav">
+            <div className="vn-nav__links">
+              {departments.map((dept) => {
+                const isOpen = activeMegaMenu === dept.id;
+                return (
+                  <div
+                    key={dept.id}
+                    className="vn-navitem vn-navitem--mega"
+                    onMouseEnter={() => handleMenuEnter(dept.id)}
+                    onMouseLeave={handleMenuLeave}
+                  >
+                    <Link
+                      href={dept.href}
+                      className="vn-navlink"
+                      data-active={isOpen}
+                      aria-expanded={isOpen}
+                      onClick={() => setActiveMegaMenu(null)}
+                    >
+                      <span>{dept.name}</span>
+                      <span className="vn-navlink__caret">
+                        <ChevronDownIcon />
+                      </span>
+                    </Link>
+                  </div>
+                );
+              })}
+
+              <div className="vn-navitem">
+                <Link
+                  href="/products?category=bespoke-favorite"
+                  className="vn-navlink"
+                  data-active={pathname === "/products" && searchParams.get("category") === "bespoke-favorite"}
+                >
+                  Bespoke
+                </Link>
+              </div>
+
+              <div className="vn-navitem">
+                <Link
+                  href="/about"
+                  className="vn-navlink"
+                  data-active={pathname === "/about"}
+                >
+                  About
+                </Link>
+              </div>
+            </div>
+          </nav>
+
+          {/* ZONE 3: ENTERPRISE MODERN ICONOGRAPHY & UTILITIES */}
+          <div className="vn-header__zone vn-header__zone--right vn-actions">
+            {/* Ask Veena Concierge Pill */}
+            <button
+              type="button"
+              className="vn-concierge-pill"
               onClick={toggleChat}
-              style={{
-                fontSize: "11.5px",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                color: "var(--color-emerald)",
-                borderBottom: "1px solid var(--color-emerald)",
-                paddingBottom: "2px",
-                whiteSpace: "nowrap",
-                fontWeight: 500
-              }}
+              title="Ask Veena Concierge"
+              aria-label="Open Ask Veena Concierge"
             >
-              Ask Veena
-            </span>
-            <span style={{ cursor: "pointer", fontSize: "14px", whiteSpace: "nowrap", opacity: 0.85 }}>Search</span>
-            <span style={{ cursor: "pointer", fontSize: "14px", whiteSpace: "nowrap", opacity: 0.85 }}>Account</span>
+              <span className="vn-concierge-pill__sparkle">
+                <SparkleIcon />
+              </span>
+              <span className="vn-concierge-pill__label">Ask Veena</span>
+            </button>
+
+            {/* Modern Search Icon Button */}
+            <button
+              type="button"
+              className={`vn-icon-btn ${searchOpen ? "vn-icon-btn--active" : ""}`}
+              onClick={() => setSearchOpen((prev) => !prev)}
+              title="Search collections"
+              aria-label="Search collections"
+            >
+              <SearchIcon />
+            </button>
+
+            {/* Modern Account Icon Button */}
+            <Link
+              href="/admin"
+              className="vn-icon-btn"
+              title="Client & Atelier Portal"
+              aria-label="Account Profile"
+            >
+              <UserIcon />
+            </Link>
+
+            {/* Modern Architectural Bag with Micro-Badge */}
             <Link
               href="/checkout"
-              style={{
-                fontSize: "11.5px",
-                letterSpacing: "0.03em",
-                border: "1px solid #15130F",
-                borderRadius: "999px",
-                padding: "7px 14px",
-                whiteSpace: "nowrap",
-                color: "#15130F",
-                fontWeight: 500
-              }}
+              className="vn-icon-btn vn-bag-btn"
+              title={`Shopping Bag (${cartCount} ${cartCount === 1 ? "item" : "items"})`}
+              aria-label={`Shopping Bag (${cartCount} items)`}
             >
-              Bag ({cartCount})
+              <BagIcon />
+              <span className="vn-bag-badge" data-count={cartCount}>
+                {cartCount}
+              </span>
             </Link>
           </div>
         </div>
+
+        {/* MEGA MENU FLYOUT PANELS (70/30 EDITORIAL ARCHITECTURE) */}
+        {activeMegaMenu && (
+          <div
+            className="vn-mega-panel animate-fade-down"
+            onMouseEnter={() => handleMenuEnter(activeMegaMenu)}
+            onMouseLeave={handleMenuLeave}
+          >
+            <div className="container-max vn-mega-panel__inner">
+              {(() => {
+                const dept = departments.find((d) => d.id === activeMegaMenu);
+                if (!dept) return null;
+
+                return (
+                  <div className="vn-mega-grid">
+                    {/* Left & Center: Structured Subcategory Columns */}
+                    <div className="vn-mega-columns">
+                      <div className="vn-mega-overview-row">
+                        <Link
+                          href={dept.href}
+                          className="vn-mega-overview-link"
+                          onClick={() => setActiveMegaMenu(null)}
+                        >
+                          <span>{dept.overviewLabel}</span>
+                          <span className="vn-mega-overview-arrow">→</span>
+                        </Link>
+                      </div>
+
+                      <div className="vn-mega-cols-wrap">
+                        {dept.columns.map((col, idx) => (
+                          <div key={idx} className="vn-mega-col">
+                            <div className="vn-mega-col__title">{col.title}</div>
+                            <ul className="vn-mega-col__list">
+                              {col.items.map((item, itemIdx) => (
+                                <li key={itemIdx} className="vn-mega-col__item">
+                                  <Link
+                                    href={item.href}
+                                    className={`vn-mega-link ${item.highlight ? "vn-mega-link--highlight" : ""}`}
+                                    onClick={() => setActiveMegaMenu(null)}
+                                  >
+                                    <span>{item.name}</span>
+                                    {item.highlight && (
+                                      <span className="vn-mega-badge">Signature</span>
+                                    )}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Editorial Campaign Spotlight Card */}
+                    <div className="vn-mega-editorial">
+                      <Link
+                        href={dept.editorial.href}
+                        className="vn-mega-card"
+                        onClick={() => setActiveMegaMenu(null)}
+                      >
+                        <div className="vn-mega-card__media">
+                          <img
+                            src={dept.editorial.image}
+                            alt={dept.editorial.title}
+                            loading="lazy"
+                          />
+                          <div className="vn-mega-card__scrim" />
+                        </div>
+                        <div className="vn-mega-card__content">
+                          <span className="vn-mega-card__eyebrow">
+                            {dept.editorial.eyebrow}
+                          </span>
+                          <h4 className="vn-mega-card__title">
+                            {dept.editorial.title}
+                          </h4>
+                          <span className="vn-mega-card__cta">
+                            <span>{dept.editorial.cta}</span>
+                            <span className="vn-mega-card__arrow">→</span>
+                          </span>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
+        {/* EXPANDABLE ENTERPRISE SEARCH DRAWER */}
+        {searchOpen && (
+          <div className="vn-search-drawer">
+            <div className="container-max vn-search-drawer__inner">
+              <form onSubmit={handleSearchSubmit} className="vn-search-drawer__form">
+                <SearchIcon className="vn-search-drawer__icon" />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  className="vn-search-drawer__input"
+                  placeholder="Search silhouettes, bubu, bespoke fabrics, lifestyle..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoComplete="off"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="vn-search-drawer__clear"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear search text"
+                  >
+                    <CloseIcon />
+                  </button>
+                )}
+              </form>
+              <button
+                type="button"
+                className="vn-search-drawer__close"
+                onClick={() => setSearchOpen(false)}
+                aria-label="Close search"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+          </div>
+        )}
       </header>
+
+      {/* MEGA MENU FOCUS SCRIM */}
+      {activeMegaMenu && (
+        <div
+          className="vn-mega-scrim"
+          aria-hidden="true"
+          onClick={() => setActiveMegaMenu(null)}
+        />
+      )}
+
+      {/* MOBILE DRAWER (DRILL-DOWN ACCORDION) */}
+      <div
+        className="vn-drawer-scrim"
+        data-open={drawerOpen}
+        onClick={() => setDrawerOpen(false)}
+        aria-hidden="true"
+      />
+      <aside className="vn-drawer" data-open={drawerOpen} aria-hidden={!drawerOpen}>
+        <div className="vn-drawer__head">
+          <Link href="/" className="vn-logo" aria-label="Veena — home" onClick={() => setDrawerOpen(false)}>
+            <img src="/images/logo.png" alt="Veena" width={45} height={44} style={{ height: "44px" }} />
+          </Link>
+          <button
+            type="button"
+            className="vn-drawer__close"
+            aria-label="Close menu"
+            onClick={() => setDrawerOpen(false)}
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        <div className="vn-drawer__body">
+          {departments.map((dept) => {
+            const isOpen = openSection === dept.id;
+            const allItems = dept.columns.flatMap((c) => c.items);
+            return (
+              <div key={dept.id} className="vn-drawer__section" data-open={isOpen}>
+                <button
+                  type="button"
+                  className="vn-drawer__row"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenSection((v) => (v === dept.id ? null : dept.id))}
+                >
+                  <span>{dept.name}</span>
+                  <span className="vn-drawer__chev">
+                    <ChevronDownIcon />
+                  </span>
+                </button>
+                <div className="vn-drawer__children">
+                  <div>
+                    <Link
+                      href={dept.href}
+                      className="vn-drawer__row vn-drawer__row--sub vn-drawer__row--overview"
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      <span>{dept.overviewLabel}</span>
+                      <span>→</span>
+                    </Link>
+                    {allItems.map((item, itemIdx) => (
+                      <Link
+                        key={itemIdx}
+                        href={item.href}
+                        className="vn-drawer__row vn-drawer__row--sub"
+                        onClick={() => setDrawerOpen(false)}
+                      >
+                        <span>{item.name}</span>
+                        {item.highlight && (
+                          <span className="vn-drawer__badge">Signature</span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="vn-drawer__section">
+            <Link
+              href="/products?category=bespoke-favorite"
+              className="vn-drawer__row"
+              onClick={() => setDrawerOpen(false)}
+            >
+              Bespoke Atelier
+            </Link>
+          </div>
+
+          <div className="vn-drawer__section">
+            <Link
+              href="/about"
+              className="vn-drawer__row"
+              onClick={() => setDrawerOpen(false)}
+            >
+              About Veena
+            </Link>
+          </div>
+        </div>
+
+        {/* ENTERPRISE MOBILE DRAWER UTILITIES */}
+        <div className="vn-drawer__foot">
+          <button
+            type="button"
+            className="vn-drawer__foot-btn vn-drawer__foot-btn--concierge"
+            onClick={() => {
+              setDrawerOpen(false);
+              toggleChat();
+            }}
+          >
+            <SparkleIcon />
+            <span>Ask Veena Concierge</span>
+          </button>
+          <button
+            type="button"
+            className="vn-drawer__foot-btn"
+            onClick={() => {
+              setDrawerOpen(false);
+              setSearchOpen(true);
+            }}
+          >
+            <SearchIcon />
+            <span>Search</span>
+          </button>
+          <Link
+            href="/admin"
+            className="vn-drawer__foot-btn"
+            onClick={() => setDrawerOpen(false)}
+          >
+            <UserIcon />
+            <span>Account</span>
+          </Link>
+          <Link
+            href="/checkout"
+            className="vn-drawer__foot-btn vn-drawer__foot-btn--bag"
+            onClick={() => setDrawerOpen(false)}
+          >
+            <BagIcon />
+            <span>Bag ({cartCount})</span>
+          </Link>
+        </div>
+      </aside>
     </>
   );
 }
