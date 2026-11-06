@@ -13,8 +13,12 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@livekit/components-react": "^2.9.24",
+    "@livekit/components-styles": "^1.2.0",
     "@prisma/client": "^5.18.0",
     "dotenv": "^17.4.2",
+    "livekit-client": "^2.22.3",
+    "livekit-server-sdk": "^2.19.1",
     "minio": "^8.0.7",
     "next": "14.2.5",
     "next-auth": "^4.24.7",

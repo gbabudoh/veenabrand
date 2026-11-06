@@ -14,7 +14,7 @@ interface HomeClientProps {
   initialRunway?: RunwayConfig | null;
   initialNewIn?: NewInConfig | null;
   initialBespoke?: BespokeTeaserConfig | null;
-  /** Supplied by the /women and /men routes — the URL is the source of truth. */
+  /** Supplied by the / (women) and /men routes — the URL is the source of truth. */
   gender: "WOMEN" | "MEN";
 }
 

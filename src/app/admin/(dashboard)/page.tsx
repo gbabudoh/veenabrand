@@ -133,12 +133,13 @@ export default function AdminDashboard() {
             <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "28px", color: "#0F172A", margin: 0, fontWeight: 600 }}>
               Executive Overview
             </h1>
-            <span style={{ fontSize: "11px", color: "#10B981", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "2px 8px", borderRadius: "999px", fontWeight: 600 }}>
-              Live Telemetry
+            <span style={{ fontSize: "11px", color: "#065F46", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "2px 8px", borderRadius: "999px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#10B981" }} />
+              Live Atelier
             </span>
           </div>
           <div style={{ fontSize: "13.5px", color: "#64748B" }}>
-            Real-time sales velocity, order fulfillment pipelines, and client telemetry
+            Real-time sales velocity, order fulfillment pipeline, and customer insights
           </div>
         </div>
 
@@ -213,7 +214,7 @@ export default function AdminDashboard() {
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
-              background: "#10B981",
+              background: "#0F172A",
               color: "#FFFFFF",
               border: "none",
               padding: "7px 14px",
@@ -221,16 +222,21 @@ export default function AdminDashboard() {
               fontSize: "12.5px",
               fontWeight: 600,
               textDecoration: "none",
-              boxShadow: "0 1px 3px rgba(16, 185, 129, 0.3)",
+              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.2)",
+              transition: "all 0.15s ease",
             }}
           >
-            <span>+ New Piece</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Add New Piece</span>
           </Link>
         </div>
       </div>
 
       {/* ===================================================================
-          FLAT-FACE KPI METRIC CARDS (4 TILES WITH ENTERPRISE ICONS)
+          FLAT-FACE KPI METRIC CARDS (4 TILES WITH LOCALIZED ICONS)
           =================================================================== */}
       <div style={{
         display: "grid",
@@ -249,7 +255,7 @@ export default function AdminDashboard() {
                 {formatNaira(metrics.totalRevenueMinor)}
               </div>
             </div>
-            {/* Emerald Icon Badge */}
+            {/* Localized Naira Symbol Badge */}
             <div style={{
               width: "40px",
               height: "40px",
@@ -260,19 +266,19 @@ export default function AdminDashboard() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              fontWeight: 700,
+              fontSize: "18px",
+              fontFamily: "var(--font-sans), sans-serif",
               flexShrink: 0,
             }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23" />
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
+              ₦
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9" }}>
-            <span style={{ fontSize: "11px", color: "#059669", background: "#ECFDF5", padding: "2px 7px", borderRadius: "999px", fontWeight: 600 }}>
-              ● Settled
-            </span>
-            <span style={{ fontSize: "11.5px", color: "#64748B" }}>Excludes unconfirmed drafts</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9", fontSize: "11.5px", color: "#64748B" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
+            <span style={{ fontWeight: 600, color: "#334155" }}>Settled</span>
+            <span style={{ color: "#CBD5E1" }}>•</span>
+            <span>Excludes unconfirmed drafts</span>
           </div>
         </div>
 
@@ -307,11 +313,11 @@ export default function AdminDashboard() {
               </svg>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9" }}>
-            <span style={{ fontSize: "11px", color: "#2563EB", background: "#EFF6FF", padding: "2px 7px", borderRadius: "999px", fontWeight: 600 }}>
-              ● All-Time
-            </span>
-            <span style={{ fontSize: "11.5px", color: "#64748B" }}>Client checkout requests</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9", fontSize: "11.5px", color: "#64748B" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#3B82F6", display: "inline-block" }} />
+            <span style={{ fontWeight: 600, color: "#334155" }}>All-Time</span>
+            <span style={{ color: "#CBD5E1" }}>•</span>
+            <span>Completed storefront checkouts</span>
           </div>
         </div>
 
@@ -347,11 +353,11 @@ export default function AdminDashboard() {
               </svg>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9" }}>
-            <span style={{ fontSize: "11px", color: "#7C3AED", background: "#F5F3FF", padding: "2px 7px", borderRadius: "999px", fontWeight: 600 }}>
-              ● Verified
-            </span>
-            <span style={{ fontSize: "11.5px", color: "#64748B" }}>Storefront accounts active</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9", fontSize: "11.5px", color: "#64748B" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#8B5CF6", display: "inline-block" }} />
+            <span style={{ fontWeight: 600, color: "#334155" }}>Active Accounts</span>
+            <span style={{ color: "#CBD5E1" }}>•</span>
+            <span>Verified client profiles</span>
           </div>
         </div>
 
@@ -385,11 +391,11 @@ export default function AdminDashboard() {
               </svg>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9" }}>
-            <span style={{ fontSize: "11px", color: "#D97706", background: "#FFFBEB", padding: "2px 7px", borderRadius: "999px", fontWeight: 600 }}>
-              ● Atelier Basket
-            </span>
-            <span style={{ fontSize: "11.5px", color: "#64748B" }}>Per purchase transaction</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #F1F5F9", fontSize: "11.5px", color: "#64748B" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#F59E0B", display: "inline-block" }} />
+            <span style={{ fontWeight: 600, color: "#334155" }}>Atelier Basket</span>
+            <span style={{ color: "#CBD5E1" }}>•</span>
+            <span>Average revenue per checkout</span>
           </div>
         </div>
       </div>
@@ -500,27 +506,45 @@ export default function AdminDashboard() {
                 <div
                   key={item.status}
                   style={{
+                    position: "relative",
+                    overflow: "hidden",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     fontSize: "12.5px",
-                    padding: "8px 12px",
+                    padding: "9px 12px",
                     borderRadius: "6px",
                     background: "#F8FAFC",
                     border: "1px solid #F1F5F9",
                   }}
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: "9px" }}>
+                  {/* Subtle proportional fill bar */}
+                  {percentage > 0 && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        width: `${percentage}%`,
+                        background: meta.bg,
+                        opacity: 0.6,
+                        pointerEvents: "none",
+                        transition: "width 0.4s ease",
+                      }}
+                    />
+                  )}
+                  <span style={{ display: "flex", alignItems: "center", gap: "9px", position: "relative", zIndex: 1 }}>
                     <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: meta.dot }} />
                     <span style={{ color: "#334155", fontWeight: 500 }}>{item.label}</span>
                   </span>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "11px", color: "#94A3B8" }}>{percentage}%</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", position: "relative", zIndex: 1 }}>
+                    <span style={{ fontSize: "11px", color: "#64748B", fontWeight: 500 }}>{percentage}%</span>
                     <span style={{
                       fontWeight: 600,
-                      background: meta.bg,
-                      color: meta.color,
-                      border: `1px solid ${meta.border}`,
+                      background: count > 0 ? meta.bg : "#FFFFFF",
+                      color: count > 0 ? meta.color : "#94A3B8",
+                      border: `1px solid ${count > 0 ? meta.border : "#E2E8F0"}`,
                       padding: "2px 8px",
                       borderRadius: "4px",
                       fontSize: "11.5px",
@@ -549,7 +573,7 @@ export default function AdminDashboard() {
             </div>
             <Link
               href="/admin/products"
-              style={{ fontSize: "12px", color: "#10B981", textDecoration: "none", fontWeight: 600 }}
+              style={{ fontSize: "12px", color: "#0F172A", textDecoration: "none", fontWeight: 600 }}
             >
               View All ↗
             </Link>
@@ -596,18 +620,20 @@ export default function AdminDashboard() {
               <Link
                 href="/admin/products"
                 style={{
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "7px 16px",
+                  background: "#0F172A",
+                  color: "#FFFFFF",
+                  padding: "8px 18px",
                   borderRadius: "6px",
                   fontSize: "12px",
                   fontWeight: 600,
                   textDecoration: "none",
-                  boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.12)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
                 }}
               >
-                + Create Garment
+                <span>+ Add New Piece</span>
               </Link>
             </div>
           ) : (

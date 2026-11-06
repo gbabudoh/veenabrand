@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
 import AskVeenaChat from "@/components/AskVeenaChat";
 import Modals from "@/components/Modals";
+import LiveNowBar from "@/components/live/LiveNowBar";
 
 interface StorefrontShellProps {
   categories: any[];
@@ -35,6 +36,7 @@ export default function StorefrontShell({
   // Consumer storefront chrome
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+      <LiveNowBar />
       <Suspense fallback={<div style={{ height: "109px", background: "rgba(246, 242, 234, 0.92)" }}></div>}>
         <Header categories={categories} megaMenuConfig={megaMenuConfig} />
       </Suspense>

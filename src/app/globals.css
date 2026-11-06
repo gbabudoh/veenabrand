@@ -482,6 +482,10 @@ body.vn-scroll-locked {
   }
 }
 
+.vn-mega-grid[data-editorial="false"] {
+  grid-template-columns: 1fr;
+}
+
 .vn-mega-columns {
   display: flex;
   flex-direction: column;
@@ -2238,4 +2242,18 @@ body.vn-scroll-locked {
   .vn-size-drawer {
     max-width: 100%;
   }
+}
+
+/* "Live now" storefront bar */
+.vn-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: vn-live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes vn-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
 }

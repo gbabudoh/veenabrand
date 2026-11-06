@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { NAV_MENU_KEY } from "@/lib/mega-menu";
 
 export interface NewInConfig {
   title?: string;
@@ -97,22 +98,8 @@ export const DEFAULT_FOOTER_CONFIG: FooterConfig = {
   ],
 };
 
-export interface DepartmentMegaConfig {
-  overviewLabel?: string;
-  col1Title?: string;
-  col2Title?: string;
-  editorial?: {
-    eyebrow?: string;
-    title?: string;
-    image?: string;
-    href?: string;
-    cta?: string;
-  };
-}
 
-export type MegaMenuConfig = Record<string, DepartmentMegaConfig>;
-
-// Shared loader for the two gender home routes (/women, /men). Both segments
+// Shared loader for the two gender home routes (/ for women, /men). Both segments
 // render the same experience against the same data; only the segment differs.
 export async function getHomeData() {
   const [products, slidesConfig, runwayConfig, newInConfig, bespokeConfig] = await Promise.all([
@@ -139,9 +126,11 @@ export async function getHomeData() {
   };
 }
 
-export async function getMegaMenuConfig(): Promise<MegaMenuConfig | null> {
+// Returns the raw stored nav document; the Header resolves it (and any legacy
+// shape) through resolveNavMenu in "@/lib/mega-menu".
+export async function getMegaMenuConfig(): Promise<unknown> {
   try {
-    const config = await db.homepageConfig.findUnique({ where: { key: "mega_menu_config" } });
+    const config = await db.homepageConfig.findUnique({ where: { key: NAV_MENU_KEY } });
     return config ? JSON.parse(config.value) : null;
   } catch (err) {
     console.error("Failed to load mega_menu_config:", err);

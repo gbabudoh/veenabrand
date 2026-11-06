@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useStore } from "@/lib/StoreContext";
 import type { NavCategory } from "@/lib/category-utils";
+import { resolveNavMenu, visibleDepartments, isHrefActive } from "@/lib/mega-menu";
 
 /* --------------------------------------------------------------------------
    ENTERPRISE MINIMALIST SVG ICON SUITE
@@ -124,171 +125,10 @@ function CloseIcon({ className = "" }: { className?: string }) {
   );
 }
 
-/* --------------------------------------------------------------------------
-   ENTERPRISE MEGA MENU TAXONOMY DEFINITION
-   -------------------------------------------------------------------------- */
-interface MenuItem {
-  name: string;
-  href: string;
-  highlight?: boolean;
-}
-
-interface MenuColumn {
-  title: string;
-  items: MenuItem[];
-}
-
-interface Department {
-  id: string;
-  name: string;
-  href: string;
-  overviewLabel: string;
-  columns: MenuColumn[];
-  editorial: {
-    eyebrow: string;
-    title: string;
-    image: string;
-    href: string;
-    cta: string;
-  };
-}
-
-const MEGA_DEPARTMENTS: Department[] = [
-  {
-    id: "women",
-    name: "Women",
-    href: "/products?gender=WOMEN",
-    overviewLabel: "All Women's Collection",
-    columns: [
-      {
-        title: "Separates & Tops",
-        items: [
-          { name: "Tops", href: "/products?gender=WOMEN&category=women-tops" },
-          { name: "Shirts", href: "/products?gender=WOMEN&category=women-shirts" },
-          { name: "Trousers", href: "/products?gender=WOMEN&category=women-trousers" },
-          { name: "Shorts", href: "/products?gender=WOMEN&category=women-shorts" },
-          { name: "Skirts", href: "/products?gender=WOMEN&category=women-skirts" },
-        ],
-      },
-      {
-        title: "Dresses & Atelier",
-        items: [
-          { name: "Dresses", href: "/products?gender=WOMEN&category=women-dresses" },
-          { name: "Bubu", href: "/products?gender=WOMEN&category=women-bubu", highlight: true },
-          { name: "Two Piece Sets", href: "/products?gender=WOMEN&category=women-two-piece-sets" },
-          { name: "Suits", href: "/products?gender=WOMEN&category=women-suits" },
-          { name: "Scarves", href: "/products?gender=WOMEN&category=women-scarves" },
-        ],
-      },
-    ],
-    editorial: {
-      eyebrow: "Signature Atelier",
-      title: "The Bubu Silhouette & Hand-Woven Silks",
-      image: "/images/hero_women.png",
-      href: "/products?gender=WOMEN&category=women-bubu",
-      cta: "Explore Atelier Women",
-    },
-  },
-  {
-    id: "men",
-    name: "Men",
-    href: "/products?gender=MEN",
-    overviewLabel: "All Men's Collection",
-    columns: [
-      {
-        title: "Tailoring & Sets",
-        items: [
-          { name: "Suits", href: "/products?gender=MEN&category=men-suits" },
-          { name: "Two Piece Set", href: "/products?gender=MEN&category=men-two-piece-set" },
-          { name: "Trousers", href: "/products?gender=MEN&category=men-trousers" },
-        ],
-      },
-      {
-        title: "Casuals & Tops",
-        items: [
-          { name: "Tops", href: "/products?gender=MEN&category=men-tops" },
-          { name: "Shirts", href: "/products?gender=MEN&category=men-shirts" },
-          { name: "Shorts", href: "/products?gender=MEN&category=men-shorts" },
-        ],
-      },
-    ],
-    editorial: {
-      eyebrow: "Atelier Tailoring",
-      title: "Architectural Precision & Modern Cuts",
-      image: "/images/hero_men.png",
-      href: "/products?gender=MEN",
-      cta: "Explore Atelier Men",
-    },
-  },
-  {
-    id: "accessories",
-    name: "Accessories",
-    href: "/products?category=accessories",
-    overviewLabel: "All Accessories",
-    columns: [
-      {
-        title: "Adornments & Jewelry",
-        items: [
-          { name: "Earrings", href: "/products?category=earrings" },
-          { name: "Necklaces", href: "/products?category=necklaces" },
-        ],
-      },
-      {
-        title: "Leather & Footwear",
-        items: [
-          { name: "Bags", href: "/products?category=bags" },
-          { name: "Sleepers", href: "/products?category=sleepers" },
-        ],
-      },
-    ],
-    editorial: {
-      eyebrow: "Finishing Touches",
-      title: "Handcrafted Adornments & Leather Goods",
-      image: "/images/hero_runway.png",
-      href: "/products?category=accessories",
-      cta: "Discover Accessories",
-    },
-  },
-  {
-    id: "lifestyle",
-    name: "Lifestyle",
-    href: "/products?category=lifestyle",
-    overviewLabel: "All Home & Living",
-    columns: [
-      {
-        title: "Bedding & Sanctuary",
-        items: [
-          { name: "Pillows", href: "/products?category=pillows" },
-          { name: "Sheets", href: "/products?category=sheets" },
-          { name: "Throws", href: "/products?category=throws" },
-        ],
-      },
-      {
-        title: "Living & Dining",
-        items: [
-          { name: "Candles", href: "/products?category=candles" },
-          { name: "Flower Vase", href: "/products?category=flower-vase" },
-          { name: "Tablemats", href: "/products?category=tablemats" },
-          { name: "Chair Covers", href: "/products?category=chair-covers" },
-          { name: "Home Accessories", href: "/products?category=home-accessories" },
-        ],
-      },
-    ],
-    editorial: {
-      eyebrow: "Living with Veena",
-      title: "Artisanal Comfort for Inspired Living",
-      image: "/images/atelier.png",
-      href: "/products?category=lifestyle",
-      cta: "Explore Lifestyle",
-    },
-  },
-];
-
-import type { MegaMenuConfig } from "@/lib/home-data";
-
 interface HeaderProps {
   categories?: NavCategory[];
-  megaMenuConfig?: MegaMenuConfig | null;
+  /** Raw stored nav config — resolved (and defaulted) here. */
+  megaMenuConfig?: unknown;
 }
 
 export default function Header({ megaMenuConfig }: HeaderProps) {
@@ -308,25 +148,11 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
 
   const cartCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-  // Merge admin-configured overrides (editorial card, custom column titles)
-  const departments = React.useMemo(() => {
-    return MEGA_DEPARTMENTS.map((dept) => {
-      const override = megaMenuConfig?.[dept.id];
-      if (!override) return dept;
-      return {
-        ...dept,
-        overviewLabel: override.overviewLabel || dept.overviewLabel,
-        columns: dept.columns.map((col, idx) => ({
-          ...col,
-          title: (idx === 0 ? override.col1Title : override.col2Title) || col.title,
-        })),
-        editorial: {
-          ...dept.editorial,
-          ...(override.editorial || {}),
-        },
-      };
-    });
-  }, [megaMenuConfig]);
+  // Admin-managed navigation (Admin → Mega Menu); falls back to the default menu.
+  const departments = React.useMemo(
+    () => visibleDepartments(resolveNavMenu(megaMenuConfig)),
+    [megaMenuConfig]
+  );
 
   // Hover handlers with smooth intentional buffer
   const handleMenuEnter = (menuId: string) => {
@@ -445,6 +271,20 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
           <nav className="vn-header__zone vn-header__zone--center vn-nav">
             <div className="vn-nav__links">
               {departments.map((dept) => {
+                if (dept.type === "link") {
+                  return (
+                    <div key={dept.id} className="vn-navitem">
+                      <Link
+                        href={dept.href}
+                        className="vn-navlink"
+                        data-active={isHrefActive(dept.href, pathname, searchParams)}
+                      >
+                        {dept.name}
+                      </Link>
+                    </div>
+                  );
+                }
+
                 const isOpen = activeMegaMenu === dept.id;
                 return (
                   <div
@@ -468,26 +308,6 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                   </div>
                 );
               })}
-
-              <div className="vn-navitem">
-                <Link
-                  href="/products?category=bespoke-favorite"
-                  className="vn-navlink"
-                  data-active={pathname === "/products" && searchParams.get("category") === "bespoke-favorite"}
-                >
-                  Bespoke
-                </Link>
-              </div>
-
-              <div className="vn-navitem">
-                <Link
-                  href="/about"
-                  className="vn-navlink"
-                  data-active={pathname === "/about"}
-                >
-                  About
-                </Link>
-              </div>
             </div>
           </nav>
 
@@ -552,11 +372,12 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
           >
             <div className="container-max vn-mega-panel__inner">
               {(() => {
-                const dept = departments.find((d) => d.id === activeMegaMenu);
+                const dept = departments.find((d) => d.id === activeMegaMenu && d.type === "mega");
                 if (!dept) return null;
+                const showEditorial = dept.editorial.visible !== false && !!dept.editorial.title;
 
                 return (
-                  <div className="vn-mega-grid">
+                  <div className="vn-mega-grid" data-editorial={showEditorial}>
                     {/* Left & Center: Structured Subcategory Columns */}
                     <div className="vn-mega-columns">
                       <div className="vn-mega-overview-row">
@@ -565,12 +386,15 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                           className="vn-mega-overview-link"
                           onClick={() => setActiveMegaMenu(null)}
                         >
-                          <span>{dept.overviewLabel}</span>
+                          <span>{dept.overviewLabel || `All ${dept.name}`}</span>
                           <span className="vn-mega-overview-arrow">→</span>
                         </Link>
                       </div>
 
-                      <div className="vn-mega-cols-wrap">
+                      <div
+                        className="vn-mega-cols-wrap"
+                        style={{ gridTemplateColumns: `repeat(${Math.max(1, Math.min(dept.columns.length, showEditorial ? 3 : 4))}, 1fr)` }}
+                      >
                         {dept.columns.map((col, idx) => (
                           <div key={idx} className="vn-mega-col">
                             <div className="vn-mega-col__title">{col.title}</div>
@@ -579,12 +403,12 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                                 <li key={itemIdx} className="vn-mega-col__item">
                                   <Link
                                     href={item.href}
-                                    className={`vn-mega-link ${item.highlight ? "vn-mega-link--highlight" : ""}`}
+                                    className={`vn-mega-link ${item.badge ? "vn-mega-link--highlight" : ""}`}
                                     onClick={() => setActiveMegaMenu(null)}
                                   >
                                     <span>{item.name}</span>
-                                    {item.highlight && (
-                                      <span className="vn-mega-badge">Signature</span>
+                                    {item.badge && (
+                                      <span className="vn-mega-badge">{item.badge}</span>
                                     )}
                                   </Link>
                                 </li>
@@ -596,6 +420,7 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                     </div>
 
                     {/* Right: Editorial Campaign Spotlight Card */}
+                    {showEditorial && (
                     <div className="vn-mega-editorial">
                       <Link
                         href={dept.editorial.href}
@@ -603,11 +428,13 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                         onClick={() => setActiveMegaMenu(null)}
                       >
                         <div className="vn-mega-card__media">
+                          {dept.editorial.image && (
                           <img
                             src={dept.editorial.image}
                             alt={dept.editorial.title}
                             loading="lazy"
                           />
+                          )}
                           <div className="vn-mega-card__scrim" />
                         </div>
                         <div className="vn-mega-card__content">
@@ -617,13 +444,16 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                           <h4 className="vn-mega-card__title">
                             {dept.editorial.title}
                           </h4>
-                          <span className="vn-mega-card__cta">
-                            <span>{dept.editorial.cta}</span>
-                            <span className="vn-mega-card__arrow">→</span>
-                          </span>
+                          {dept.editorial.cta && (
+                            <span className="vn-mega-card__cta">
+                              <span>{dept.editorial.cta}</span>
+                              <span className="vn-mega-card__arrow">→</span>
+                            </span>
+                          )}
                         </div>
                       </Link>
                     </div>
+                    )}
                   </div>
                 );
               })()}
@@ -703,6 +533,20 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
 
         <div className="vn-drawer__body">
           {departments.map((dept) => {
+            if (dept.type === "link") {
+              return (
+                <div key={dept.id} className="vn-drawer__section">
+                  <Link
+                    href={dept.href}
+                    className="vn-drawer__row"
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    {dept.name}
+                  </Link>
+                </div>
+              );
+            }
+
             const isOpen = openSection === dept.id;
             const allItems = dept.columns.flatMap((c) => c.items);
             return (
@@ -725,7 +569,7 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                       className="vn-drawer__row vn-drawer__row--sub vn-drawer__row--overview"
                       onClick={() => setDrawerOpen(false)}
                     >
-                      <span>{dept.overviewLabel}</span>
+                      <span>{dept.overviewLabel || `All ${dept.name}`}</span>
                       <span>→</span>
                     </Link>
                     {allItems.map((item, itemIdx) => (
@@ -736,8 +580,8 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
                         onClick={() => setDrawerOpen(false)}
                       >
                         <span>{item.name}</span>
-                        {item.highlight && (
-                          <span className="vn-drawer__badge">Signature</span>
+                        {item.badge && (
+                          <span className="vn-drawer__badge">{item.badge}</span>
                         )}
                       </Link>
                     ))}
@@ -746,26 +590,6 @@ export default function Header({ megaMenuConfig }: HeaderProps) {
               </div>
             );
           })}
-
-          <div className="vn-drawer__section">
-            <Link
-              href="/products?category=bespoke-favorite"
-              className="vn-drawer__row"
-              onClick={() => setDrawerOpen(false)}
-            >
-              Bespoke Atelier
-            </Link>
-          </div>
-
-          <div className="vn-drawer__section">
-            <Link
-              href="/about"
-              className="vn-drawer__row"
-              onClick={() => setDrawerOpen(false)}
-            >
-              About Veena
-            </Link>
-          </div>
         </div>
 
         {/* ENTERPRISE MOBILE DRAWER UTILITIES */}

@@ -30,20 +30,37 @@ export default function LogoutButton() {
       disabled={loading}
       style={{
         width: "100%",
-        background: "rgba(219, 76, 63, 0.15)",
-        color: "#e6746c",
-        border: "1px solid rgba(219, 76, 63, 0.25)",
-        padding: "8px 12px",
-        fontSize: "12px",
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
+        background: "transparent",
+        color: "#64748B",
+        border: "1px solid #E2E8F0",
+        padding: "7px 12px",
+        fontSize: "11.5px",
+        fontWeight: 500,
         cursor: "pointer",
-        borderRadius: "2px",
-        fontWeight: 600,
-        transition: "all 0.2s ease",
+        borderRadius: "6px",
+        transition: "all 0.15s ease",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "6px",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = "#DC2626";
+        e.currentTarget.style.borderColor = "#FECACA";
+        e.currentTarget.style.background = "#FEF2F2";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.color = "#64748B";
+        e.currentTarget.style.borderColor = "#E2E8F0";
+        e.currentTarget.style.background = "transparent";
       }}
     >
-      {loading ? "Signing out..." : "Sign Out"}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" y1="12" x2="9" y2="12" />
+      </svg>
+      <span>{loading ? "Signing out..." : "Sign Out"}</span>
     </button>
   );
 }

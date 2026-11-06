@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import type { FooterConfig, FooterColumn, FooterLink } from "@/lib/home-data";
 import { DEFAULT_FOOTER_CONFIG } from "@/lib/home-data";
+import MediaUploadButton from "@/components/admin/MediaUploadButton";
 
 export default function AdminFooterConfigPage() {
   const [footer, setFooter] = useState<FooterConfig>(DEFAULT_FOOTER_CONFIG);
@@ -165,39 +166,41 @@ export default function AdminFooterConfigPage() {
 
   if (loading) {
     return (
-      <div style={{ color: "rgba(246,242,234,0.5)", padding: "20px" }}>
+      <div style={{ color: "#64748B", padding: "40px 0", textAlign: "center", fontSize: "13.5px" }}>
         Loading footer configuration...
       </div>
     );
   }
 
   const cardStyle: React.CSSProperties = {
-    background: "#15130F",
-    border: "1px solid rgba(246, 242, 234, 0.08)",
-    borderRadius: "4px",
-    padding: "26px",
-    marginBottom: "32px",
+    background: "#FFFFFF",
+    border: "1px solid #E2E8F0",
+    borderRadius: "10px",
+    padding: "24px 28px",
+    marginBottom: "28px",
+    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
   };
 
   const labelStyle: React.CSSProperties = {
     display: "block",
     fontSize: "11px",
-    color: "rgba(246,242,234,0.5)",
-    marginBottom: "6px",
+    color: "#64748B",
+    marginBottom: "5px",
     textTransform: "uppercase",
     fontWeight: 600,
-    letterSpacing: "0.04em",
+    letterSpacing: "0.05em",
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    background: "#0F0E0B",
-    border: "1px solid rgba(246,242,234,0.15)",
-    color: "#F6F2EA",
+    background: "#FFFFFF",
+    border: "1px solid #CBD5E1",
+    color: "#0F172A",
     padding: "9px 12px",
     fontSize: "13px",
-    borderRadius: "2px",
+    borderRadius: "6px",
     outline: "none",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
   };
 
   return (
@@ -208,24 +211,25 @@ export default function AdminFooterConfigPage() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-end",
-          marginBottom: "34px",
+          marginBottom: "28px",
         }}
       >
         <div>
           <h1
             style={{
               fontFamily: "var(--font-serif)",
-              fontSize: "30px",
+              fontSize: "28px",
               margin: 0,
-              fontWeight: 500,
+              fontWeight: 600,
+              color: "#0F172A",
             }}
           >
             Storefront Footer Customizer
           </h1>
           <div
             style={{
-              fontSize: "13px",
-              color: "rgba(246, 242, 234, 0.5)",
+              fontSize: "13.5px",
+              color: "#64748B",
               marginTop: "4px",
             }}
           >
@@ -237,15 +241,16 @@ export default function AdminFooterConfigPage() {
           onClick={handleSave}
           disabled={saving}
           style={{
-            background: saved ? "var(--color-emerald)" : "#F6F2EA",
-            color: saved ? "#F6F2EA" : "#15130F",
+            background: saved ? "#059669" : "#0F172A",
+            color: "#FFFFFF",
             border: "none",
             padding: "9px 22px",
-            fontSize: "13px",
-            borderRadius: "2px",
+            fontSize: "12.5px",
+            borderRadius: "6px",
             cursor: "pointer",
             fontWeight: 600,
-            transition: "all 0.2s ease",
+            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.15)",
+            transition: "all 0.15s ease",
           }}
         >
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save Footer"}
@@ -259,7 +264,7 @@ export default function AdminFooterConfigPage() {
             fontSize: "15px",
             margin: "0 0 16px",
             fontWeight: 600,
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "12px",
           }}
         >
@@ -269,15 +274,21 @@ export default function AdminFooterConfigPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "20px" }}>
           <div>
             <label style={labelStyle}>Logo Image URL</label>
-            <input
-              type="text"
-              value={footer.logoImage || ""}
-              onChange={(e) =>
-                setFooter((prev) => ({ ...prev, logoImage: e.target.value }))
-              }
-              placeholder="/images/logo.png"
-              style={inputStyle}
-            />
+            <div style={{ display: "flex", gap: "8px", alignItems: "stretch" }}>
+              <input
+                type="text"
+                value={footer.logoImage || ""}
+                onChange={(e) =>
+                  setFooter((prev) => ({ ...prev, logoImage: e.target.value }))
+                }
+                placeholder="/images/logo.png"
+                style={inputStyle}
+              />
+              <MediaUploadButton
+                folder="footer"
+                onUploaded={(url) => setFooter((prev) => ({ ...prev, logoImage: url }))}
+              />
+            </div>
           </div>
 
           <div>
@@ -302,7 +313,7 @@ export default function AdminFooterConfigPage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "12px",
             marginBottom: "20px",
           }}
@@ -314,7 +325,7 @@ export default function AdminFooterConfigPage() {
             <div
               style={{
                 fontSize: "12px",
-                color: "rgba(246,242,234,0.45)",
+                color: "#64748B",
                 marginTop: "2px",
               }}
             >
@@ -325,8 +336,8 @@ export default function AdminFooterConfigPage() {
           <button
             onClick={handleAddColumn}
             style={{
-              background: "#0F0E0B",
-              border: "1px solid rgba(246,242,234,0.2)",
+              background: "#FFFFFF",
+              border: "1px solid #CBD5E1",
               color: "#F6F2EA",
               padding: "6px 14px",
               fontSize: "12px",
@@ -352,8 +363,8 @@ export default function AdminFooterConfigPage() {
             <div
               key={colIdx}
               style={{
-                background: "#0F0E0B",
-                border: "1px solid rgba(246,242,234,0.1)",
+                background: "#FFFFFF",
+                border: "1px solid #E2E8F0",
                 borderRadius: "3px",
                 padding: "16px",
               }}
@@ -479,7 +490,7 @@ export default function AdminFooterConfigPage() {
             fontSize: "15px",
             margin: "0 0 16px",
             fontWeight: 600,
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "12px",
           }}
         >
@@ -503,8 +514,8 @@ export default function AdminFooterConfigPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                background: "#0F0E0B",
-                border: "1px solid rgba(246,242,234,0.15)",
+                background: "#FFFFFF",
+                border: "1px solid #CBD5E1",
                 padding: "8px 12px",
                 borderRadius: "2px",
                 cursor: "pointer",
@@ -612,7 +623,7 @@ export default function AdminFooterConfigPage() {
             fontSize: "15px",
             margin: "0 0 16px",
             fontWeight: 600,
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "12px",
           }}
         >
@@ -672,10 +683,10 @@ export default function AdminFooterConfigPage() {
                   gridTemplateColumns: "1fr 1fr 24px",
                   gap: "8px",
                   alignItems: "center",
-                  background: "#0F0E0B",
+                  background: "#FFFFFF",
                   padding: "8px 10px",
                   borderRadius: "2px",
-                  border: "1px solid rgba(246,242,234,0.1)",
+                  border: "1px solid #E2E8F0",
                 }}
               >
                 <input
@@ -722,7 +733,7 @@ export default function AdminFooterConfigPage() {
             fontSize: "11px",
             textTransform: "uppercase",
             letterSpacing: "0.08em",
-            color: "rgba(246,242,234,0.45)",
+            color: "#64748B",
             marginBottom: "14px",
             fontWeight: 600,
           }}
@@ -732,8 +743,8 @@ export default function AdminFooterConfigPage() {
 
         <div
           style={{
-            background: "#15130F",
-            border: "1px solid rgba(246,242,234,0.12)",
+            background: "#FFFFFF",
+            border: "1px solid #E2E8F0",
             borderRadius: "4px",
             padding: "40px 24px 20px",
             color: "#F6F2EA",
@@ -760,7 +771,7 @@ export default function AdminFooterConfigPage() {
                 style={{
                   fontSize: "11.5px",
                   lineHeight: 1.6,
-                  color: "rgba(246, 242, 234, 0.55)",
+                  color: "#475569",
                   margin: 0,
                 }}
               >
@@ -776,7 +787,7 @@ export default function AdminFooterConfigPage() {
                     fontSize: "10px",
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
-                    color: "rgba(246, 242, 234, 0.5)",
+                    color: "#64748B",
                     marginBottom: "10px",
                     fontWeight: 600,
                   }}
@@ -804,7 +815,7 @@ export default function AdminFooterConfigPage() {
                     fontSize: "10px",
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
-                    color: "rgba(246, 242, 234, 0.5)",
+                    color: "#64748B",
                     marginBottom: "10px",
                     fontWeight: 600,
                   }}
@@ -815,7 +826,7 @@ export default function AdminFooterConfigPage() {
                   <p
                     style={{
                       fontSize: "11px",
-                      color: "rgba(246, 242, 234, 0.5)",
+                      color: "#64748B",
                       marginBottom: "10px",
                       lineHeight: 1.4,
                     }}

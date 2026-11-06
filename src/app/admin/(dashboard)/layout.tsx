@@ -74,7 +74,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
               letterSpacing: "0.02em",
             }}>
               <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10B981" }} />
-              Active Console Session
+              Storefront Live
             </div>
           </div>
         </header>

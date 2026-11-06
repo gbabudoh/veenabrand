@@ -21,7 +21,7 @@ export function isGender(value: string | null | undefined): value is Gender {
 
 /** The storefront home route for a segment. */
 export function genderHome(gender: Gender) {
-  return gender === "MEN" ? "/men" : "/women";
+  return gender === "MEN" ? "/men" : "/";
 }
 
 export function genderLabel(gender: Gender) {

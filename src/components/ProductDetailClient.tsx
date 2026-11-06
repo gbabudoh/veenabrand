@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useStore } from "@/lib/StoreContext";
 import { formatNaira } from "@/lib/money";
+import { genderHome } from "@/lib/gender";
 
 /* ==========================================================================
    ENTERPRISE HAIRLINE ICONS (1.5px Stroke Width)
@@ -245,7 +246,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         <div className="vn-pdp-breadcrumbs-trail">
           <Link href="/">Atelier</Link>
           <span>/</span>
-          <Link href={product.gender === "WOMEN" ? "/women" : "/men"}>
+          <Link href={genderHome(product.gender === "MEN" ? "MEN" : "WOMEN")}>
             {product.gender === "WOMEN" ? "Women" : "Men"}
           </Link>
           <span>/</span>

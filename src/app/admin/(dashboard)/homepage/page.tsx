@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import type {
   NewInConfig,
-  MegaMenuConfig,
-  DepartmentMegaConfig,
   RunwayConfig,
   LookbookTile,
   BespokeTeaserConfig,
@@ -59,72 +58,12 @@ const DEFAULT_BESPOKE: BespokeTeaserConfig = {
   image: "/images/atelier.png",
 };
 
-const DEFAULT_MEGA: MegaMenuConfig = {
-  women: {
-    overviewLabel: "All Women's Collection",
-    col1Title: "Signature Pieces",
-    col2Title: "Dresses & Atelier",
-    editorial: {
-      eyebrow: "Signature Atelier",
-      title: "The Bubu Silhouette & Hand-Woven Silks",
-      image: "/images/hero_women.png",
-      href: "/products?gender=WOMEN&category=women-bubu",
-      cta: "Explore Atelier Women",
-    },
-  },
-  men: {
-    overviewLabel: "All Men's Collection",
-    col1Title: "Tailoring & Sets",
-    col2Title: "Casuals & Tops",
-    editorial: {
-      eyebrow: "Atelier Tailoring",
-      title: "Architectural Precision & Modern Cuts",
-      image: "/images/hero_men.png",
-      href: "/products?gender=MEN",
-      cta: "Explore Atelier Men",
-    },
-  },
-  accessories: {
-    overviewLabel: "All Accessories",
-    col1Title: "Adornments & Jewelry",
-    col2Title: "Leather & Daily Luxury",
-    editorial: {
-      eyebrow: "Fine Accents",
-      title: "Handcrafted Bags & Sculptural Jewelry",
-      image: "/images/accessories.png",
-      href: "/products?category=accessories",
-      cta: "Shop Accessories",
-    },
-  },
-  lifestyle: {
-    overviewLabel: "All Lifestyle",
-    col1Title: "Soft Furnishings & Living",
-    col2Title: "Dining & Accents",
-    editorial: {
-      eyebrow: "Living with Veena",
-      title: "Artisanal Comfort for Inspired Living",
-      image: "/images/atelier.png",
-      href: "/products?category=lifestyle",
-      cta: "Explore Lifestyle",
-    },
-  },
-};
-
-const DEPARTMENTS = [
-  { id: "women", name: "Women" },
-  { id: "men", name: "Men" },
-  { id: "accessories", name: "Accessories" },
-  { id: "lifestyle", name: "Lifestyle" },
-];
-
 export default function AdminHomepageConfigPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [runway, setRunway] = useState<RunwayConfig>(DEFAULT_RUNWAY);
   const [runwaySubTab, setRunwaySubTab] = useState<"video" | "lookbook">("video");
   const [newIn, setNewIn] = useState<NewInConfig>(DEFAULT_NEW_IN);
   const [bespoke, setBespoke] = useState<BespokeTeaserConfig>(DEFAULT_BESPOKE);
-  const [megaMenu, setMegaMenu] = useState<MegaMenuConfig>(DEFAULT_MEGA);
-  const [activeDept, setActiveDept] = useState<string>("women");
 
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
@@ -140,7 +79,6 @@ export default function AdminHomepageConfigPage() {
           const runwayConfig = data.configs?.find((c: any) => c.key === "runway_switch");
           const newInConfig = data.configs?.find((c: any) => c.key === "new_in_config");
           const bespokeConfig = data.configs?.find((c: any) => c.key === "bespoke_teaser_config");
-          const megaConfig = data.configs?.find((c: any) => c.key === "mega_menu_config");
 
           if (slideConfig) {
             try {
@@ -179,20 +117,6 @@ export default function AdminHomepageConfigPage() {
             try {
               const parsed = JSON.parse(bespokeConfig.value);
               setBespoke({ ...DEFAULT_BESPOKE, ...parsed });
-            } catch (e) {
-              console.error(e);
-            }
-          }
-
-          if (megaConfig) {
-            try {
-              const parsed = JSON.parse(megaConfig.value);
-              setMegaMenu({
-                women: { ...DEFAULT_MEGA.women, ...(parsed.women || {}) },
-                men: { ...DEFAULT_MEGA.men, ...(parsed.men || {}) },
-                accessories: { ...DEFAULT_MEGA.accessories, ...(parsed.accessories || {}) },
-                lifestyle: { ...DEFAULT_MEGA.lifestyle, ...(parsed.lifestyle || {}) },
-              });
             } catch (e) {
               console.error(e);
             }
@@ -236,46 +160,14 @@ export default function AdminHomepageConfigPage() {
     setBespoke((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleMegaDeptChange = (
-    deptId: string,
-    field: "overviewLabel" | "col1Title" | "col2Title",
-    value: string
-  ) => {
-    setMegaMenu((prev) => ({
-      ...prev,
-      [deptId]: {
-        ...prev[deptId],
-        [field]: value,
-      },
-    }));
-  };
-
-  const handleMegaEditorialChange = (
-    deptId: string,
-    field: "eyebrow" | "title" | "image" | "href" | "cta",
-    value: string
-  ) => {
-    setMegaMenu((prev) => ({
-      ...prev,
-      [deptId]: {
-        ...prev[deptId],
-        editorial: {
-          ...(prev[deptId]?.editorial || {}),
-          [field]: value,
-        },
-      },
-    }));
-  };
-
   const handleSave = async (
-    key: "hero_slides" | "runway_switch" | "new_in_config" | "mega_menu_config" | "bespoke_teaser_config"
+    key: "hero_slides" | "runway_switch" | "new_in_config" | "bespoke_teaser_config"
   ) => {
     setSavingKey(key);
     let value = "";
     if (key === "hero_slides") value = JSON.stringify(slides);
     else if (key === "runway_switch") value = JSON.stringify(runway);
     else if (key === "new_in_config") value = JSON.stringify(newIn);
-    else if (key === "mega_menu_config") value = JSON.stringify(megaMenu);
     else if (key === "bespoke_teaser_config") value = JSON.stringify(bespoke);
 
     try {
@@ -301,67 +193,66 @@ export default function AdminHomepageConfigPage() {
 
   if (loading) {
     return (
-      <div style={{ color: "rgba(246,242,234,0.5)", padding: "20px" }}>
+      <div style={{ color: "#64748B", padding: "40px 0", textAlign: "center", fontSize: "13.5px" }}>
         Loading homepage configurations...
       </div>
     );
   }
 
   const cardStyle: React.CSSProperties = {
-    background: "#15130F",
-    border: "1px solid rgba(246, 242, 234, 0.08)",
-    borderRadius: "4px",
-    padding: "26px",
-    marginBottom: "32px",
+    background: "#FFFFFF",
+    border: "1px solid #E2E8F0",
+    borderRadius: "10px",
+    padding: "24px 28px",
+    marginBottom: "28px",
+    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
   };
 
   const labelStyle: React.CSSProperties = {
     display: "block",
     fontSize: "11px",
-    color: "rgba(246,242,234,0.5)",
-    marginBottom: "6px",
+    color: "#64748B",
+    marginBottom: "5px",
     textTransform: "uppercase",
     fontWeight: 600,
-    letterSpacing: "0.04em",
+    letterSpacing: "0.05em",
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    background: "#0F0E0B",
-    border: "1px solid rgba(246,242,234,0.15)",
-    color: "#F6F2EA",
-    padding: "10px 12px",
-    fontSize: "13.5px",
-    borderRadius: "2px",
+    background: "#FFFFFF",
+    border: "1px solid #CBD5E1",
+    color: "#0F172A",
+    padding: "9px 12px",
+    fontSize: "13px",
+    borderRadius: "6px",
     outline: "none",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
   };
-
-  const currentDeptConfig: DepartmentMegaConfig =
-    megaMenu[activeDept] || DEFAULT_MEGA[activeDept] || {};
-  const currentEditorial = currentDeptConfig.editorial || {};
 
   return (
     <div style={{ maxWidth: "1120px" }}>
       {/* Title Header */}
-      <div style={{ marginBottom: "34px" }}>
+      <div style={{ marginBottom: "28px" }}>
         <h1
           style={{
             fontFamily: "var(--font-serif)",
-            fontSize: "30px",
+            fontSize: "28px",
             margin: 0,
-            fontWeight: 500,
+            fontWeight: 600,
+            color: "#0F172A",
           }}
         >
-          Homepage & Navigation Customizer
+          Homepage &amp; Navigation Customizer
         </h1>
         <div
           style={{
-            fontSize: "13px",
-            color: "rgba(246, 242, 234, 0.5)",
+            fontSize: "13.5px",
+            color: "#64748B",
             marginTop: "4px",
           }}
         >
-          Manage live carousel slides, Runway video/lookbook media, New In arrivals, Bespoke Atelier teasers, and Mega Menu navigation.
+          Manage live carousel slides, Runway video/lookbook media, New In arrivals, and Bespoke Atelier teasers.
         </div>
       </div>
 
@@ -372,7 +263,7 @@ export default function AdminHomepageConfigPage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "14px",
             marginBottom: "24px",
           }}
@@ -384,7 +275,7 @@ export default function AdminHomepageConfigPage() {
             <div
               style={{
                 fontSize: "12px",
-                color: "rgba(246,242,234,0.45)",
+                color: "#64748B",
                 marginTop: "2px",
               }}
             >
@@ -501,7 +392,7 @@ export default function AdminHomepageConfigPage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "14px",
             marginBottom: "24px",
           }}
@@ -539,7 +430,7 @@ export default function AdminHomepageConfigPage() {
             <div
               style={{
                 fontSize: "12px",
-                color: "rgba(246,242,234,0.45)",
+                color: "#64748B",
                 marginTop: "2px",
               }}
             >
@@ -594,7 +485,7 @@ export default function AdminHomepageConfigPage() {
                 alignItems: "center",
                 gap: "10px",
                 background: "#0F0E0B",
-                border: "1px solid rgba(246,242,234,0.15)",
+                border: "1px solid #CBD5E1",
                 padding: "8px 12px",
                 borderRadius: "2px",
                 cursor: "pointer",
@@ -796,7 +687,7 @@ export default function AdminHomepageConfigPage() {
                   fontSize: "11px",
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
-                  color: "rgba(246,242,234,0.45)",
+                  color: "#64748B",
                   marginBottom: "12px",
                   fontWeight: 600,
                 }}
@@ -1000,7 +891,7 @@ export default function AdminHomepageConfigPage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "14px",
             marginBottom: "24px",
           }}
@@ -1038,7 +929,7 @@ export default function AdminHomepageConfigPage() {
             <div
               style={{
                 fontSize: "12px",
-                color: "rgba(246,242,234,0.45)",
+                color: "#64748B",
                 marginTop: "2px",
               }}
             >
@@ -1089,7 +980,7 @@ export default function AdminHomepageConfigPage() {
                 alignItems: "center",
                 gap: "12px",
                 background: "#0F0E0B",
-                border: "1px solid rgba(246,242,234,0.15)",
+                border: "1px solid #CBD5E1",
                 padding: "8px 12px",
                 borderRadius: "2px",
                 cursor: "pointer",
@@ -1191,365 +1082,39 @@ export default function AdminHomepageConfigPage() {
         </div>
       </div>
 
-      {/* 4. MEGA MENU & EDITORIAL SPOTLIGHT CONFIG */}
-      <div style={cardStyle}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
-            paddingBottom: "14px",
-            marginBottom: "24px",
-          }}
-        >
-          <div>
-            <h2 style={{ fontSize: "16px", margin: 0, fontWeight: 600 }}>
-              Mega Menu & Editorial Spotlight Config
-            </h2>
-            <div
-              style={{
-                fontSize: "12px",
-                color: "rgba(246,242,234,0.45)",
-                marginTop: "2px",
-              }}
-            >
-              Customize column header titles, overview links, and editorial showcase cards per department
-            </div>
-          </div>
-          <button
-            onClick={() => handleSave("mega_menu_config")}
-            disabled={savingKey === "mega_menu_config"}
-            style={{
-              background:
-                savedKey === "mega_menu_config"
-                  ? "var(--color-emerald)"
-                  : "#F6F2EA",
-              color: savedKey === "mega_menu_config" ? "#F6F2EA" : "#15130F",
-              border: "none",
-              padding: "7px 16px",
-              fontSize: "12px",
-              borderRadius: "2px",
-              cursor: "pointer",
-              fontWeight: 600,
-              transition: "all 0.2s ease",
-            }}
-          >
-            {savingKey === "mega_menu_config"
-              ? "Saving..."
-              : savedKey === "mega_menu_config"
-              ? "Saved ✓"
-              : "Save Mega Menu Config"}
-          </button>
-        </div>
-
-        {/* Department Switcher Tabs */}
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-            borderBottom: "1px solid rgba(246,242,234,0.1)",
-            paddingBottom: "12px",
-            marginBottom: "24px",
-          }}
-        >
-          {DEPARTMENTS.map((dept) => {
-            const isSelected = activeDept === dept.id;
-            return (
-              <button
-                key={dept.id}
-                onClick={() => setActiveDept(dept.id)}
-                style={{
-                  padding: "8px 18px",
-                  fontSize: "12.5px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  fontWeight: 600,
-                  border: isSelected
-                    ? "1px solid var(--color-emerald)"
-                    : "1px solid rgba(246,242,234,0.12)",
-                  background: isSelected
-                    ? "rgba(47, 92, 72, 0.2)"
-                    : "#0F0E0B",
-                  color: isSelected ? "#F6F2EA" : "rgba(246,242,234,0.6)",
-                  borderRadius: "2px",
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {dept.name}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Tab Content */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.2fr 1fr",
-            gap: "28px",
-            alignItems: "start",
-          }}
-        >
-          {/* Edit Form */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <h3
-              style={{
-                fontSize: "13px",
-                margin: "0 0 6px",
-                color: "var(--color-emerald)",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
-              {DEPARTMENTS.find((d) => d.id === activeDept)?.name} — Column & Link Labels
-            </h3>
-
-            <div>
-              <label style={labelStyle}>Department Overview Link Label</label>
-              <input
-                type="text"
-                placeholder="e.g. All Women's Collection"
-                value={currentDeptConfig.overviewLabel || ""}
-                onChange={(e) =>
-                  handleMegaDeptChange(activeDept, "overviewLabel", e.target.value)
-                }
-                style={inputStyle}
-              />
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "14px",
-              }}
-            >
-              <div>
-                <label style={labelStyle}>Column 1 Header Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Signature Pieces"
-                  value={currentDeptConfig.col1Title || ""}
-                  onChange={(e) =>
-                    handleMegaDeptChange(activeDept, "col1Title", e.target.value)
-                  }
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Column 2 Header Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Dresses & Atelier"
-                  value={currentDeptConfig.col2Title || ""}
-                  onChange={(e) =>
-                    handleMegaDeptChange(activeDept, "col2Title", e.target.value)
-                  }
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-
-            <h3
-              style={{
-                fontSize: "13px",
-                margin: "16px 0 6px",
-                color: "var(--color-emerald)",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
-              Editorial Spotlight Card (Right 30% Column)
-            </h3>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "14px",
-              }}
-            >
-              <div>
-                <label style={labelStyle}>Spotlight Eyebrow</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Signature Atelier"
-                  value={currentEditorial.eyebrow || ""}
-                  onChange={(e) =>
-                    handleMegaEditorialChange(activeDept, "eyebrow", e.target.value)
-                  }
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>CTA Button Label</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Explore Atelier Women"
-                  value={currentEditorial.cta || ""}
-                  onChange={(e) =>
-                    handleMegaEditorialChange(activeDept, "cta", e.target.value)
-                  }
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label style={labelStyle}>Spotlight Headline Title</label>
-              <input
-                type="text"
-                placeholder="e.g. The Bubu Silhouette & Hand-Woven Silks"
-                value={currentEditorial.title || ""}
-                onChange={(e) =>
-                  handleMegaEditorialChange(activeDept, "title", e.target.value)
-                }
-                style={inputStyle}
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Spotlight Image URL</label>
-              <input
-                type="text"
-                placeholder="/images/hero_women.png"
-                value={currentEditorial.image || ""}
-                onChange={(e) =>
-                  handleMegaEditorialChange(activeDept, "image", e.target.value)
-                }
-                style={inputStyle}
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Destination Link URL</label>
-              <input
-                type="text"
-                placeholder="/products?gender=WOMEN&category=women-bubu"
-                value={currentEditorial.href || ""}
-                onChange={(e) =>
-                  handleMegaEditorialChange(activeDept, "href", e.target.value)
-                }
-                style={inputStyle}
-              />
-            </div>
-          </div>
-
-          {/* Live Preview Card */}
-          <div
-            style={{
-              background: "#0F0E0B",
-              border: "1px solid rgba(246, 242, 234, 0.1)",
-              borderRadius: "4px",
-              padding: "18px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "11px",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "rgba(246,242,234,0.45)",
-                marginBottom: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Live Dropdown Card Preview
-            </div>
-
-            <div
-              style={{
-                position: "relative",
-                aspectRatio: "4/3",
-                borderRadius: "3px",
-                overflow: "hidden",
-                backgroundImage: `url(${
-                  currentEditorial.image || "/images/hero_women.png"
-                })`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end",
-                padding: "20px",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-              }}
-            >
-              {/* Gradient Scrim */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(180deg, rgba(21,19,15,0.1) 0%, rgba(21,19,15,0.85) 100%)",
-                }}
-              />
-
-              {/* Text Overlays */}
-              <div style={{ position: "relative", zIndex: 1 }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-mono, monospace)",
-                    fontSize: "9.5px",
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                    color: "rgba(246,242,234,0.85)",
-                    display: "block",
-                    marginBottom: "6px",
-                  }}
-                >
-                  {currentEditorial.eyebrow || "Spotlight"}
-                </span>
-                <div
-                  style={{
-                    fontFamily: "var(--font-serif, serif)",
-                    fontSize: "16px",
-                    fontWeight: 500,
-                    color: "#F6F2EA",
-                    lineHeight: 1.25,
-                    marginBottom: "12px",
-                  }}
-                >
-                  {currentEditorial.title || "Featured Atelier Piece"}
-                </div>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "#F6F2EA",
-                    borderBottom: "1px solid #F6F2EA",
-                    paddingBottom: "2px",
-                  }}
-                >
-                  {currentEditorial.cta || "Explore"} →
-                </div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                marginTop: "14px",
-                fontSize: "11.5px",
-                color: "rgba(246,242,234,0.4)",
-                lineHeight: 1.5,
-              }}
-            >
-              Links to:{" "}
-              <code style={{ color: "var(--color-emerald)", fontSize: "11px" }}>
-                {currentEditorial.href || "—"}
-              </code>
-            </div>
+      {/* 4. MEGA MENU — managed on its own page */}
+      <div
+        style={{
+          ...cardStyle,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "20px",
+        }}
+      >
+        <div>
+          <h2 style={{ fontSize: "16px", margin: 0, fontWeight: 600 }}>
+            Mega Menu & Navigation
+          </h2>
+          <div style={{ fontSize: "12px", color: "#64748B", marginTop: "2px" }}>
+            Departments, columns, links, badges and spotlight cards now have their own control page.
           </div>
         </div>
+        <Link
+          href="/admin/mega-menu"
+          style={{
+            background: "#F6F2EA",
+            color: "#15130F",
+            padding: "8px 18px",
+            fontSize: "12.5px",
+            borderRadius: "2px",
+            fontWeight: 600,
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Open Mega Menu Manager →
+        </Link>
       </div>
 
       {/* 5. BESPOKE ATELIER & MADE TO MEASURE TEASER CONFIG */}
@@ -1559,7 +1124,7 @@ export default function AdminHomepageConfigPage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            borderBottom: "1px solid rgba(246,242,234,0.08)",
+            borderBottom: "1px solid #F1F5F9",
             paddingBottom: "14px",
             marginBottom: "24px",
           }}
@@ -1597,7 +1162,7 @@ export default function AdminHomepageConfigPage() {
             <div
               style={{
                 fontSize: "12px",
-                color: "rgba(246,242,234,0.45)",
+                color: "#64748B",
                 marginTop: "2px",
               }}
             >
@@ -1653,7 +1218,7 @@ export default function AdminHomepageConfigPage() {
                     alignItems: "center",
                     gap: "10px",
                     background: "#0F0E0B",
-                    border: "1px solid rgba(246,242,234,0.15)",
+                    border: "1px solid #CBD5E1",
                     padding: "8px 12px",
                     borderRadius: "2px",
                     cursor: "pointer",

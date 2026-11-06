@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { formatNaira } from "@/lib/money";
+import MediaUploadButton from "@/components/admin/MediaUploadButton";
 
 interface Variant {
   id: string;
@@ -21,6 +23,7 @@ interface ProductMedia {
   type: string;
   url: string;
   label: string | null;
+  sortOrder?: number;
 }
 
 interface CategoryOption {
@@ -44,6 +47,12 @@ interface Product {
   colors: ProductColor[];
   media: ProductMedia[];
   variants: Variant[];
+}
+
+interface MediaItemState {
+  type: "IMAGE" | "VIDEO";
+  url: string;
+  label: string;
 }
 
 // Curated luxury fashion house presets
@@ -71,6 +80,14 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [activeFormTab, setActiveFormTab] = useState<"details" | "media" | "craft" | "colors">("details");
+
+  // Filters & Search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [genderFilter, setGenderFilter] = useState<"ALL" | "WOMEN" | "MEN">("ALL");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [mediaFilter, setMediaFilter] = useState<"ALL" | "WITH_VIDEO" | "PHOTOS_ONLY">("ALL");
 
   // Form states
   const [productId, setProductId] = useState("");
@@ -83,9 +100,14 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [priceNaira, setPriceNaira] = useState("");
 
+  // Media Gallery Hub state
+  const [mediaList, setMediaList] = useState<MediaItemState[]>([
+    { type: "IMAGE", url: "/placeholder/front.jpg", label: "Front Look" },
+  ]);
+
   // Dynamic colors list state (name + hex)
   const [colorsList, setColorsList] = useState<{ name: string; hex: string }[]>([
-    { name: "Imperial Emerald", hex: "#1F5C42" }
+    { name: "Imperial Emerald", hex: "#1F5C42" },
   ]);
 
   const fetchProducts = async () => {
@@ -119,8 +141,44 @@ export default function AdminProductsPage() {
     fetchCategories();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this piece?")) return;
+  const totalVideos = useMemo(() => {
+    return products.filter((p) => p.media?.some((m) => m.type === "VIDEO")).length;
+  }, [products]);
+
+  const totalInventoryUnits = useMemo(() => {
+    return products.reduce((acc, p) => {
+      const pTotal = p.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0;
+      return acc + pTotal;
+    }, 0);
+  }, [products]);
+
+  // Group categories by department for clean enterprise UX
+  const groupedCategories = useMemo(() => {
+    const parentMap: Record<string, CategoryOption> = {};
+    const childrenMap: Record<string, CategoryOption[]> = {};
+    const roots: CategoryOption[] = [];
+
+    for (const cat of categories) {
+      if (!cat.parentId) {
+        roots.push(cat);
+        parentMap[cat.id] = cat;
+      }
+    }
+
+    for (const cat of categories) {
+      if (cat.parentId) {
+        if (!childrenMap[cat.parentId]) childrenMap[cat.parentId] = [];
+        childrenMap[cat.parentId].push(cat);
+      }
+    }
+
+    return { roots, childrenMap, parentMap };
+  }, [categories]);
+
+  const handleDelete = async (id: string, pieceName: string) => {
+    if (!confirm(`Are you sure you want to permanently delete "${pieceName}"? All media references, variants, and stock records will be removed.`)) {
+      return;
+    }
 
     try {
       const res = await fetch(`/api/admin/products?id=${id}`, {
@@ -140,32 +198,83 @@ export default function AdminProductsPage() {
   const openCreateForm = () => {
     setIsEditing(false);
     setIsCreating(true);
+    setActiveFormTab("details");
     setName("");
     setDescription("");
-    setFabricCare("");
-    setShippingReturnsNote("");
+    setFabricCare("100% Raw Silk Organza & French Crepe. Specialist atelier dry clean only.");
+    setShippingReturnsNote("Tailored on demand in our Lagos atelier. Dispatched via insured courier in 3-5 business days.");
     setGender("WOMEN");
     setCategoryId(categories[0]?.id || "");
     setPriceNaira("");
+    setMediaList([
+      { type: "IMAGE", url: "/placeholder/front.jpg", label: "Front Look" },
+    ]);
     setColorsList([{ name: "Imperial Emerald", hex: "#1F5C42" }]);
   };
 
   const openEditForm = (p: Product) => {
     setIsCreating(false);
     setIsEditing(true);
+    setActiveFormTab("details");
     setProductId(p.id);
     setName(p.name);
     setDescription(p.description);
-    setFabricCare(p.fabricCare);
-    setShippingReturnsNote(p.shippingReturnsNote);
+    setFabricCare(p.fabricCare || "");
+    setShippingReturnsNote(p.shippingReturnsNote || "");
     setGender(p.gender);
     setCategoryId(p.categoryId || "");
     setPriceNaira((p.priceMinor / 100).toString());
+    setMediaList(
+      p.media && p.media.length > 0
+        ? p.media.map((m) => ({
+            type: m.type === "VIDEO" ? "VIDEO" : "IMAGE",
+            url: m.url,
+            label: m.label || (m.type === "VIDEO" ? "Runway Lookbook Video" : "Angle Still"),
+          }))
+        : [{ type: "IMAGE", url: "/placeholder/front.jpg", label: "Front Look" }]
+    );
     setColorsList(
       p.colors && p.colors.length > 0
         ? p.colors.map((c) => ({ name: c.name, hex: c.hex }))
         : [{ name: "Imperial Emerald", hex: "#1F5C42" }]
     );
+  };
+
+  // Media Hub Actions
+  const addMediaItem = (type: "IMAGE" | "VIDEO") => {
+    setMediaList((prev) => [
+      ...prev,
+      {
+        type,
+        url: "",
+        label: type === "VIDEO" ? "Runway Lookbook Video" : `Angle ${prev.length + 1}`,
+      },
+    ]);
+  };
+
+  const updateMediaItem = (index: number, field: keyof MediaItemState, value: string) => {
+    setMediaList((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const removeMediaItem = (index: number) => {
+    if (mediaList.length <= 1) return;
+    setMediaList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const moveMediaItem = (index: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= mediaList.length) return;
+    setMediaList((prev) => {
+      const next = [...prev];
+      const temp = next[index];
+      next[index] = next[targetIdx];
+      next[targetIdx] = temp;
+      return next;
+    });
   };
 
   // Color Studio Actions
@@ -185,7 +294,7 @@ export default function AdminProductsPage() {
   const addCustomColor = () => {
     setColorsList((prev) => [
       ...prev,
-      { name: `Hue ${prev.length + 1}`, hex: "#8A7D71" }
+      { name: `Hue ${prev.length + 1}`, hex: "#8A7D71" },
     ]);
   };
 
@@ -214,12 +323,12 @@ export default function AdminProductsPage() {
         { name: "Golden Saffron", hex: "#C49A45" },
         { name: "Smoky Mauve", hex: "#7E5C6B" },
         { name: "Forest Brocade", hex: "#1B3B2B" },
-        { name: "Crimson Silk", hex: "#7B1123" }
+        { name: "Crimson Silk", hex: "#7B1123" },
       ];
       const pick = randomTones[Math.floor(Math.random() * randomTones.length)];
       setColorsList((prev) => [
         ...prev,
-        { name: `${pick.name} #${prev.length + 1}`, hex: pick.hex }
+        { name: `${pick.name} #${prev.length + 1}`, hex: pick.hex },
       ]);
     }
   };
@@ -237,8 +346,27 @@ export default function AdminProductsPage() {
       hex: c.hex.startsWith("#") ? c.hex.trim() : `#${c.hex.trim()}`,
     }));
 
-    if (isCreating) {
-      try {
+    const formattedMedia = mediaList
+      .filter((m) => m.url.trim().length > 0)
+      .map((m, i) => ({
+        type: m.type,
+        url: m.url.trim(),
+        label: m.label.trim() || (m.type === "VIDEO" ? "Runway Lookbook Video" : `Angle ${i + 1}`),
+        sortOrder: i,
+      }));
+
+    if (formattedMedia.length === 0) {
+      formattedMedia.push({
+        type: "IMAGE",
+        url: "/placeholder/front.jpg",
+        label: "Front Look",
+        sortOrder: 0,
+      });
+    }
+
+    setSaving(true);
+    try {
+      if (isCreating) {
         const res = await fetch("/api/admin/products", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -251,10 +379,7 @@ export default function AdminProductsPage() {
             categoryId,
             priceMinor,
             colors: formattedColors,
-            media: [
-              { type: "IMAGE", url: "/placeholder/front.jpg", label: "Front" },
-              { type: "IMAGE", url: "/placeholder/detail.jpg", label: "Detail" },
-            ]
+            media: formattedMedia,
           }),
         });
 
@@ -265,11 +390,7 @@ export default function AdminProductsPage() {
           const data = await res.json();
           alert(data.error || "Create failed");
         }
-      } catch (err) {
-        console.error(err);
-      }
-    } else if (isEditing) {
-      try {
+      } else if (isEditing) {
         const res = await fetch("/api/admin/products", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -283,6 +404,7 @@ export default function AdminProductsPage() {
             categoryId,
             priceMinor,
             colors: formattedColors,
+            media: formattedMedia,
           }),
         });
 
@@ -293,597 +415,1053 @@ export default function AdminProductsPage() {
           const data = await res.json();
           alert(data.error || "Update failed");
         }
-      } catch (err) {
-        console.error(err);
       }
+    } catch (err) {
+      console.error(err);
+      alert("An unexpected network error occurred");
+    } finally {
+      setSaving(false);
     }
   };
 
+  // Filtered catalogue logic
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const term = searchTerm.toLowerCase();
+      const matchesSearch =
+        p.name.toLowerCase().includes(term) ||
+        p.slug.toLowerCase().includes(term) ||
+        (p.category?.name || "").toLowerCase().includes(term);
+
+      const matchesGender =
+        genderFilter === "ALL" || p.gender === genderFilter;
+
+      const matchingCategoryIds =
+        categoryFilter === "ALL"
+          ? null
+          : [categoryFilter, ...(groupedCategories.childrenMap[categoryFilter]?.map((ch) => ch.id) || [])];
+
+      const matchesCategory =
+        !matchingCategoryIds || (p.categoryId && matchingCategoryIds.includes(p.categoryId));
+
+      const hasVideo = p.media?.some((m) => m.type === "VIDEO");
+      const matchesMedia =
+        mediaFilter === "ALL" ||
+        (mediaFilter === "WITH_VIDEO" && hasVideo) ||
+        (mediaFilter === "PHOTOS_ONLY" && !hasVideo);
+
+      return matchesSearch && matchesGender && matchesCategory && matchesMedia;
+    });
+  }, [products, searchTerm, genderFilter, categoryFilter, mediaFilter]);
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    background: "#FFFFFF",
+    border: "1px solid #CBD5E1",
+    color: "#0F172A",
+    padding: "9px 12px",
+    fontSize: "13px",
+    borderRadius: "6px",
+    outline: "none",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+    fontFamily: "inherit",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "11px",
+    color: "#64748B",
+    marginBottom: "5px",
+    textTransform: "uppercase",
+    fontWeight: 600,
+    letterSpacing: "0.05em",
+  };
+
   return (
-    <div>
-      {/* Page header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "32px" }}>
+    <div style={{ maxWidth: "100%" }}>
+      {/* Top Header & Telemetry Badges */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "26px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "28px", color: "#0F172A", margin: 0, fontWeight: 600 }}>
-            Products Registry
-          </h1>
-          <div style={{ fontSize: "13.5px", color: "#64748B", marginTop: "4px" }}>
-            Manage atelier garments, size allocations, price tiers, and dynamic colorways
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+            <h1 style={{ fontFamily: "var(--font-serif)", fontSize: "28px", color: "#0F172A", margin: 0, fontWeight: 600 }}>
+              Atelier Product Registry
+            </h1>
+            <span style={{ fontSize: "11.5px", color: "#065F46", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "2px 9px", borderRadius: "999px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "5px" }}>
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10B981" }} />
+              Catalogue Live
+            </span>
+          </div>
+          <div style={{ fontSize: "13px", color: "#64748B" }}>
+            Curate couture garments, lookbook photography, runway video reels, colorway swatches, and size allocations
           </div>
         </div>
-        {!isCreating && !isEditing && (
-          <button
-            onClick={openCreateForm}
-            style={{
-              background: "#10B981",
-              color: "#FFFFFF",
-              border: "none",
-              padding: "10px 20px",
-              fontSize: "13px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 600,
-              boxShadow: "0 1px 3px rgba(16, 185, 129, 0.3)",
-              transition: "background 0.15s ease",
-            }}
-          >
-            + Create New Piece
-          </button>
-        )}
+
+        {/* Action Controls & Top Stats */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+          {/* Quick Metrics Badge */}
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "14px",
+            background: "#FFFFFF",
+            border: "1px solid #E2E8F0",
+            padding: "6px 14px",
+            borderRadius: "6px",
+            fontSize: "12px",
+            color: "#64748B",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+          }}>
+            <span><strong style={{ color: "#0F172A" }}>{products.length}</strong> Pieces</span>
+            <span style={{ color: "#CBD5E1" }}>•</span>
+            <span><strong style={{ color: "#1D4ED8" }}>{totalVideos}</strong> Runway Reels</span>
+            <span style={{ color: "#CBD5E1" }}>•</span>
+            <span><strong style={{ color: "#059669" }}>{totalInventoryUnits}</strong> Total Units</span>
+          </div>
+
+          {!isCreating && !isEditing && (
+            <button
+              type="button"
+              onClick={openCreateForm}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "#0F172A",
+                color: "#FFFFFF",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                fontSize: "12.5px",
+                fontWeight: 600,
+                cursor: "pointer",
+                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.15)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Add Atelier Piece</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Forms Drawer overlay */}
+      {/* ===================================================================
+          MODERN ENTERPRISE FORM: PRODUCT SPECIFICATIONS & MULTI-MEDIA HUB
+          =================================================================== */}
       {(isCreating || isEditing) && (
         <div style={{
           background: "#FFFFFF",
           border: "1px solid #E2E8F0",
-          borderRadius: "8px",
-          padding: "32px",
+          borderRadius: "10px",
+          padding: "28px 32px",
           marginBottom: "32px",
-          maxWidth: "800px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          maxWidth: "1020px",
+          boxShadow: "0 4px 20px rgba(15, 23, 42, 0.06)",
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", paddingBottom: "16px", borderBottom: "1px solid #F1F5F9" }}>
-            <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "20px", color: "#0F172A", margin: 0, fontWeight: 600 }}>
-              {isCreating ? "New Product Specifications" : `Edit Specifications: ${name}`}
-            </h2>
+          {/* Form Header */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", paddingBottom: "16px", borderBottom: "1px solid #F1F5F9" }}>
+            <div>
+              <h2 style={{ fontFamily: "var(--font-serif)", fontSize: "21px", color: "#0F172A", margin: 0, fontWeight: 600 }}>
+                {isCreating ? "New Atelier Piece Specification" : `Edit Specifications: ${name || "Untitled Garment"}`}
+              </h2>
+              <div style={{ fontSize: "12.5px", color: "#64748B", marginTop: "3px" }}>
+                Configure garment metadata, high-resolution photography, runway video, and bespoke palettes
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => { setIsCreating(false); setIsEditing(false); }}
-              style={{ background: "none", border: "none", color: "#64748B", cursor: "pointer", fontSize: "18px" }}
+              style={{
+                background: "#F8FAFC",
+                border: "1px solid #E2E8F0",
+                color: "#64748B",
+                cursor: "pointer",
+                width: "28px",
+                height: "28px",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "13px",
+              }}
             >
               ✕
             </button>
           </div>
-          
-          <form onSubmit={handleSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px" }}>
-            <div style={{ gridColumn: "span 2" }}>
-              <label style={{ display: "block", fontSize: "11.5px", color: "#64748B", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
-                Garment Name
-              </label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Silk Draped Column Gown"
-                style={{
-                  width: "100%",
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "10px 14px",
-                  fontSize: "13.5px",
-                  borderRadius: "6px",
-                  outline: "none"
-                }}
-              />
-            </div>
 
-            <div style={{ gridColumn: "span 2" }}>
-              <label style={{ display: "block", fontSize: "11.5px", color: "#64748B", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
-                Description
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                placeholder="Detailed atelier fabric, drape, and silhouette description..."
-                style={{
-                  width: "100%",
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "10px 14px",
-                  fontSize: "13.5px",
-                  borderRadius: "6px",
-                  outline: "none",
-                  resize: "vertical"
-                }}
-              />
-            </div>
+          {/* Form Section Navigation Tabs */}
+          <div style={{
+            display: "flex",
+            gap: "8px",
+            borderBottom: "1px solid #E2E8F0",
+            paddingBottom: "10px",
+            marginBottom: "24px",
+            overflowX: "auto",
+          }}>
+            {[
+              { id: "details", label: "1. Core Garment Specs" },
+              { id: "media", label: `2. Media Hub (${mediaList.length} assets)` },
+              { id: "craft", label: "3. Fabric, Care & Shipping" },
+              { id: "colors", label: `4. Colorway Studio (${colorsList.length} hues)` },
+            ].map((tab) => {
+              const isSelected = activeFormTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveFormTab(tab.id as any)}
+                  style={{
+                    background: isSelected ? "#0F172A" : "transparent",
+                    color: isSelected ? "#FFFFFF" : "#64748B",
+                    border: "none",
+                    padding: "6px 14px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: isSelected ? 600 : 500,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
 
-            <div>
-              <label style={{ display: "block", fontSize: "11.5px", color: "#64748B", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
-                Gender Segment
-              </label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "10px 14px",
-                  fontSize: "13.5px",
-                  borderRadius: "6px",
-                  cursor: "pointer"
-                }}
-              >
-                <option value="WOMEN">Women</option>
-                <option value="MEN">Men</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "11.5px", color: "#64748B", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
-                Category
-              </label>
-              <select
-                required
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "10px 14px",
-                  fontSize: "13.5px",
-                  borderRadius: "6px",
-                  cursor: "pointer"
-                }}
-              >
-                <option value="">— Select a category —</option>
-                {categories.filter((c) => !c.parentId).map((parent) => (
-                  <React.Fragment key={parent.id}>
-                    <option value={parent.id}>{parent.name}{parent.active ? "" : " (hidden)"}</option>
-                    {categories.filter((c) => c.parentId === parent.id).map((child) => (
-                      <option key={child.id} value={child.id}>&nbsp;&nbsp;&nbsp;{child.name}{child.active ? "" : " (hidden)"}</option>
-                    ))}
-                  </React.Fragment>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "11.5px", color: "#64748B", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
-                Price (NGN Naira)
-              </label>
-              <input
-                type="number"
-                required
-                value={priceNaira}
-                onChange={(e) => setPriceNaira(e.target.value)}
-                placeholder="e.g. 145000"
-                style={{
-                  width: "100%",
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "10px 14px",
-                  fontSize: "13.5px",
-                  borderRadius: "6px",
-                  outline: "none"
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "11.5px", color: "#64748B", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
-                Fabric &amp; Care Details
-              </label>
-              <input
-                type="text"
-                value={fabricCare}
-                onChange={(e) => setFabricCare(e.target.value)}
-                placeholder="e.g. 100% silk. Dry clean only."
-                style={{
-                  width: "100%",
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "10px 14px",
-                  fontSize: "13.5px",
-                  borderRadius: "6px",
-                  outline: "none"
-                }}
-              />
-            </div>
-
-            <div style={{ gridColumn: "span 2" }}>
-              <label style={{ display: "block", fontSize: "11.5px", color: "#64748B", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
-                Shipping Announcement
-              </label>
-              <input
-                type="text"
-                value={shippingReturnsNote}
-                onChange={(e) => setShippingReturnsNote(e.target.value)}
-                placeholder="e.g. Ships next-day within Lagos."
-                style={{
-                  width: "100%",
-                  background: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  color: "#0F172A",
-                  padding: "10px 14px",
-                  fontSize: "13.5px",
-                  borderRadius: "6px",
-                  outline: "none"
-                }}
-              />
-            </div>
-
-            {/* ===================================================================
-                ATELIER COLORWAYS & PALETTE STUDIO
-                =================================================================== */}
-            <div style={{
-              gridColumn: "span 2",
-              marginTop: "8px",
-              padding: "20px",
-              background: "#F8FAFC",
-              border: "1px solid #E2E8F0",
-              borderRadius: "8px"
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: 700, letterSpacing: "0.04em", color: "#0F172A", textTransform: "uppercase" }}>
-                    Atelier Colorways &amp; Swatches Studio
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+            {/* Tab 1: Core Specs */}
+            {activeFormTab === "details" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr", gap: "16px" }}>
+                  <div>
+                    <label style={labelStyle}>Garment Title *</label>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Silk Organza Cape Column Gown"
+                      style={inputStyle}
+                    />
                   </div>
-                  <div style={{ fontSize: "12px", color: "#64748B", marginTop: "3px" }}>
-                    Configure all fabric colorways. All sizes (XS–XL) will automatically be generated in inventory.
+
+                  <div>
+                    <label style={labelStyle}>Merchandising Department &amp; Category *</label>
+                    <select
+                      value={categoryId}
+                      onChange={(e) => setCategoryId(e.target.value)}
+                      required
+                      style={{ ...inputStyle, cursor: "pointer" }}
+                    >
+                      <option value="" disabled>Select department or category</option>
+                      {groupedCategories.roots.map((root) => {
+                        const children = groupedCategories.childrenMap[root.id] || [];
+                        return (
+                          <optgroup key={root.id} label={`── ${root.name.toUpperCase()} DEPARTMENT ──`}>
+                            <option value={root.id}>
+                              All {root.name} (Top-level)
+                            </option>
+                            {children.map((sub) => (
+                              <option key={sub.id} value={sub.id}>
+                                {root.name} → {sub.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Gender Segment *</label>
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      style={{ ...inputStyle, cursor: "pointer" }}
+                    >
+                      <option value="WOMEN">Women's Atelier</option>
+                      <option value="MEN">Men's Sartorial</option>
+                    </select>
                   </div>
                 </div>
-                <div style={{ fontSize: "12px", color: "#059669", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "3px 10px", borderRadius: "999px", fontWeight: 600 }}>
-                  {colorsList.length} {colorsList.length === 1 ? "Colorway" : "Colorways"}
+
+                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 2fr", gap: "16px" }}>
+                  <div>
+                    <label style={labelStyle}>Price in Naira (₦) *</label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: "11px", top: "9px", color: "#64748B", fontWeight: 700, fontSize: "13px" }}>₦</span>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        step="any"
+                        value={priceNaira}
+                        onChange={(e) => setPriceNaira(e.target.value)}
+                        placeholder="e.g. 185000"
+                        style={{ ...inputStyle, paddingLeft: "28px", fontWeight: 600 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Silhouette &amp; Silhouette Overview</label>
+                    <input
+                      type="text"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="e.g. Hand-draped column silhouette featuring hand-stitched beaded hem..."
+                      style={inputStyle}
+                    />
+                  </div>
                 </div>
               </div>
+            )}
 
-              {/* Quick Preset Pills */}
-              <div style={{ marginBottom: "18px" }}>
-                <div style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px", fontWeight: 600 }}>
-                  Quick-Generate From Curated Atelier Hues
+            {/* Tab 2: Atelier Lookbook Imagery & Runway Video Hub */}
+            {activeFormTab === "media" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F8FAFC", border: "1px solid #E2E8F0", padding: "12px 16px", borderRadius: "8px" }}>
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: 600, color: "#0F172A" }}>
+                      Lookbook Imagery &amp; Runway Video Assets
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#64748B" }}>
+                      Upload high-res files directly to storage or paste direct CDN / video URLs (MP4, Vimeo, WebM)
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      onClick={() => addMediaItem("IMAGE")}
+                      style={{
+                        background: "#FFFFFF",
+                        border: "1px solid #CBD5E1",
+                        color: "#334155",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
+                      }}
+                    >
+                      <span>+ Add Photo</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addMediaItem("VIDEO")}
+                      style={{
+                        background: "#EFF6FF",
+                        border: "1px solid #BFDBFE",
+                        color: "#1D4ED8",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                      }}
+                    >
+                      <span>▶ Add Runway Video</span>
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                  {LUXURY_PALETTE_PRESETS.map((preset) => {
-                    const isSelected = colorsList.some(
-                      (c) => c.name.toLowerCase() === preset.name.toLowerCase() || c.hex.toLowerCase() === preset.hex.toLowerCase()
-                    );
+
+                {/* Media Cards List */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {mediaList.map((m, idx) => {
+                    const isVideo = m.type === "VIDEO";
+
                     return (
-                      <button
-                        key={preset.name}
-                        type="button"
-                        onClick={() => addPresetColor(preset)}
-                        title={isSelected ? "Already configured" : `Add ${preset.name} (${preset.hex})`}
+                      <div
+                        key={idx}
                         style={{
-                          display: "inline-flex",
+                          display: "flex",
                           alignItems: "center",
-                          gap: "6px",
-                          background: isSelected ? "#ECFDF5" : "#FFFFFF",
-                          border: isSelected ? "1px solid #10B981" : "1px solid #CBD5E1",
-                          color: isSelected ? "#065F46" : "#334155",
-                          padding: "4px 10px",
-                          borderRadius: "999px",
-                          fontSize: "11.5px",
-                          cursor: isSelected ? "default" : "pointer",
-                          fontWeight: isSelected ? 600 : 500,
-                          transition: "all 0.15s ease",
-                          boxShadow: "0 1px 2px rgba(0,0,0,0.03)"
+                          gap: "14px",
+                          background: isVideo ? "#F8FAFC" : "#FFFFFF",
+                          border: isVideo ? "1px solid #BFDBFE" : "1px solid #E2E8F0",
+                          borderRadius: "8px",
+                          padding: "12px 14px",
                         }}
                       >
-                        <span
+                        {/* Visual Thumbnail / Video Player Preview */}
+                        <div style={{
+                          width: "50px",
+                          height: "64px",
+                          borderRadius: "6px",
+                          background: "#0F172A",
+                          overflow: "hidden",
+                          position: "relative",
+                          flexShrink: 0,
+                          border: "1px solid #CBD5E1",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}>
+                          {isVideo ? (
+                            m.url ? (
+                              <video
+                                src={m.url}
+                                muted
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                            ) : (
+                              <span style={{ color: "#93C5FD", fontSize: "18px" }}>▶</span>
+                            )
+                          ) : (
+                            <img
+                              src={m.url || "/placeholder/front.jpg"}
+                              alt={m.label || `Asset ${idx + 1}`}
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          )}
+
+                          {/* Order badge */}
+                          <span style={{
+                            position: "absolute",
+                            top: "2px",
+                            left: "2px",
+                            background: "rgba(15, 23, 42, 0.75)",
+                            color: "#FFFFFF",
+                            fontSize: "9px",
+                            padding: "1px 4px",
+                            borderRadius: "2px",
+                            fontWeight: 700,
+                          }}>
+                            #{idx + 1}
+                          </span>
+                        </div>
+
+                        {/* Format Toggle Pill */}
+                        <select
+                          value={m.type}
+                          onChange={(e) => updateMediaItem(idx, "type", e.target.value)}
                           style={{
-                            width: "9px",
-                            height: "9px",
-                            borderRadius: "50%",
-                            backgroundColor: preset.hex,
-                            border: "1px solid rgba(0,0,0,0.15)"
+                            background: isVideo ? "#EFF6FF" : "#F8FAFC",
+                            border: `1px solid ${isVideo ? "#BFDBFE" : "#CBD5E1"}`,
+                            color: isVideo ? "#1D4ED8" : "#0F172A",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            padding: "6px 8px",
+                            cursor: "pointer",
+                            fontWeight: 600,
                           }}
+                        >
+                          <option value="IMAGE">Photo Still</option>
+                          <option value="VIDEO">Runway Video</option>
+                        </select>
+
+                        {/* Label descriptor */}
+                        <div style={{ width: "180px", flexShrink: 0 }}>
+                          <input
+                            type="text"
+                            value={m.label}
+                            onChange={(e) => updateMediaItem(idx, "label", e.target.value)}
+                            placeholder={isVideo ? "Runway Lookbook Video" : "e.g. Front View, Fabric Macro"}
+                            style={{ ...inputStyle, padding: "7px 10px", fontSize: "12px" }}
+                          />
+                        </div>
+
+                        {/* URL input */}
+                        <div style={{ flex: 1 }}>
+                          <input
+                            type="text"
+                            value={m.url}
+                            onChange={(e) => updateMediaItem(idx, "url", e.target.value)}
+                            placeholder={isVideo ? "https://cdn.example.com/videos/runway.mp4" : "https://cdn.example.com/images/front.jpg"}
+                            style={{ ...inputStyle, padding: "7px 10px", fontSize: "12px", fontFamily: "var(--font-mono)" }}
+                          />
+                        </div>
+
+                        {/* Direct File Upload integration */}
+                        <MediaUploadButton
+                          folder="products"
+                          accept={isVideo ? "video/*" : "image/*"}
+                          label="Upload"
+                          variant="light"
+                          onUploaded={(publicUrl) => updateMediaItem(idx, "url", publicUrl)}
                         />
-                        <span>{preset.name}</span>
-                        {isSelected && <span style={{ fontSize: "10px", color: "#10B981" }}>✓</span>}
-                      </button>
+
+                        {/* Reorder and Delete controls */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => moveMediaItem(idx, "up")}
+                            title="Move Up in presentation sequence"
+                            style={{
+                              background: "none",
+                              border: "1px solid #E2E8F0",
+                              borderRadius: "4px",
+                              padding: "5px 7px",
+                              color: idx === 0 ? "#CBD5E1" : "#475569",
+                              cursor: idx === 0 ? "not-allowed" : "pointer",
+                              fontSize: "11px",
+                            }}
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === mediaList.length - 1}
+                            onClick={() => moveMediaItem(idx, "down")}
+                            title="Move Down in presentation sequence"
+                            style={{
+                              background: "none",
+                              border: "1px solid #E2E8F0",
+                              borderRadius: "4px",
+                              padding: "5px 7px",
+                              color: idx === mediaList.length - 1 ? "#CBD5E1" : "#475569",
+                              cursor: idx === mediaList.length - 1 ? "not-allowed" : "pointer",
+                              fontSize: "11px",
+                            }}
+                          >
+                            ▼
+                          </button>
+                          <button
+                            type="button"
+                            disabled={mediaList.length <= 1}
+                            onClick={() => removeMediaItem(idx)}
+                            title="Delete media slot"
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: mediaList.length <= 1 ? "#CBD5E1" : "#EF4444",
+                              cursor: mediaList.length <= 1 ? "not-allowed" : "pointer",
+                              padding: "5px 8px",
+                              fontSize: "14px",
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
               </div>
+            )}
 
-              {/* Active Colorway List */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {colorsList.map((color, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      background: "#FFFFFF",
-                      border: "1px solid #E2E8F0",
-                      borderRadius: "6px",
-                      padding: "10px 14px",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
-                    }}
-                  >
-                    <span style={{ fontSize: "11px", color: "#94A3B8", width: "24px", fontWeight: 700 }}>
-                      #{index + 1}
-                    </span>
+            {/* Tab 3: Fabric & Care */}
+            {activeFormTab === "craft" && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px" }}>
+                <div>
+                  <label style={labelStyle}>Fabric Composition &amp; Garment Care</label>
+                  <textarea
+                    rows={4}
+                    value={fabricCare}
+                    onChange={(e) => setFabricCare(e.target.value)}
+                    placeholder="e.g. 100% Raw Silk Organza & French Crepe. Specialist atelier dry clean only."
+                    style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Bespoke Tailoring &amp; Shipping Dispatch Notes</label>
+                  <textarea
+                    rows={4}
+                    value={shippingReturnsNote}
+                    onChange={(e) => setShippingReturnsNote(e.target.value)}
+                    placeholder="e.g. Tailored on demand in our Lagos atelier. Dispatched via insured courier in 3-5 business days."
+                    style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+                  />
+                </div>
+              </div>
+            )}
 
-                    {/* Circular Swatch with Native Color Picker Overlay */}
-                    <div style={{ position: "relative", width: "32px", height: "32px", flexShrink: 0 }}>
-                      <div
+            {/* Tab 4: Colorway Studio */}
+            {activeFormTab === "colors" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontSize: "12.5px", color: "#64748B" }}>
+                    Configure official fabric hues available for selection on the storefront
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      onClick={addCustomColor}
+                      style={{
+                        background: "#FFFFFF",
+                        border: "1px solid #CBD5E1",
+                        color: "#334155",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 500,
+                      }}
+                    >
+                      + Add Swatch
+                    </button>
+                    <button
+                      type="button"
+                      onClick={generateRandomAtelierHue}
+                      style={{
+                        background: "#FFFBEB",
+                        border: "1px solid #FDE68A",
+                        color: "#B45309",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      ✨ Preset Tone
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "10px" }}>
+                  {colorsList.map((color, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        background: "#F8FAFC",
+                        border: "1px solid #E2E8F0",
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      <input
+                        type="color"
+                        value={color.hex.startsWith("#") && color.hex.length === 7 ? color.hex : "#000000"}
+                        onChange={(e) => updateColor(index, "hex", e.target.value)}
                         style={{
-                          width: "32px",
-                          height: "32px",
+                          width: "28px",
+                          height: "28px",
+                          border: "none",
                           borderRadius: "50%",
-                          backgroundColor: color.hex,
-                          border: "2px solid #E2E8F0",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                          cursor: "pointer",
+                          background: "none",
+                          padding: 0,
                         }}
                       />
                       <input
-                        type="color"
-                        value={color.hex.startsWith("#") && color.hex.length === 7 ? color.hex : "#1F5C42"}
-                        onChange={(e) => updateColor(index, "hex", e.target.value)}
-                        title="Open interactive color wheel"
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          opacity: 0,
-                          cursor: "pointer"
-                        }}
+                        type="text"
+                        value={color.name}
+                        onChange={(e) => updateColor(index, "name", e.target.value)}
+                        placeholder="Color Name"
+                        style={{ ...inputStyle, padding: "5px 8px", fontSize: "12px" }}
                       />
-                    </div>
-
-                    {/* Hex input */}
-                    <div style={{ width: "110px", flexShrink: 0 }}>
                       <input
                         type="text"
                         value={color.hex}
                         onChange={(e) => updateColor(index, "hex", e.target.value)}
                         placeholder="#HEX"
-                        style={{
-                          width: "100%",
-                          background: "#F8FAFC",
-                          border: "1px solid #CBD5E1",
-                          color: "#0F172A",
-                          padding: "8px 10px",
-                          fontSize: "12.5px",
-                          borderRadius: "4px",
-                          fontFamily: "var(--font-mono)",
-                          outline: "none"
-                        }}
+                        style={{ ...inputStyle, width: "80px", padding: "5px 8px", fontSize: "12px", fontFamily: "var(--font-mono)" }}
                       />
-                    </div>
-
-                    {/* Name input */}
-                    <div style={{ flex: 1 }}>
-                      <input
-                        type="text"
-                        value={color.name}
-                        onChange={(e) => updateColor(index, "name", e.target.value)}
-                        placeholder="e.g. Imperial Emerald"
+                      <button
+                        type="button"
+                        disabled={colorsList.length <= 1}
+                        onClick={() => removeColor(index)}
                         style={{
-                          width: "100%",
-                          background: "#F8FAFC",
-                          border: "1px solid #CBD5E1",
-                          color: "#0F172A",
-                          padding: "8px 10px",
-                          fontSize: "12.5px",
-                          borderRadius: "4px",
-                          outline: "none"
+                          background: "none",
+                          border: "none",
+                          color: colorsList.length <= 1 ? "#CBD5E1" : "#EF4444",
+                          cursor: colorsList.length <= 1 ? "not-allowed" : "pointer",
+                          fontSize: "14px",
+                          padding: "2px 4px",
                         }}
-                      />
+                      >
+                        ✕
+                      </button>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                    {/* Delete button */}
-                    <button
-                      type="button"
-                      disabled={colorsList.length <= 1}
-                      onClick={() => removeColor(index)}
-                      title={colorsList.length <= 1 ? "At least one colourway is required" : "Remove colourway"}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: colorsList.length <= 1 ? "#CBD5E1" : "#EF4444",
-                        cursor: colorsList.length <= 1 ? "not-allowed" : "pointer",
-                        padding: "6px 10px",
-                        fontSize: "15px",
-                        lineHeight: 1
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+            {/* Form Actions Footer */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #F1F5F9", paddingTop: "18px", marginTop: "10px" }}>
+              <div style={{ fontSize: "12px", color: "#64748B" }}>
+                All updates automatically generate size inventory allocations (XS - XL) across each configured colourway.
               </div>
 
-              {/* Action Buttons for Studio */}
-              <div style={{ display: "flex", gap: "10px", marginTop: "14px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   type="button"
-                  onClick={generateRandomAtelierHue}
+                  onClick={() => { setIsCreating(false); setIsEditing(false); }}
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    background: "#FEF3C7",
-                    border: "1px solid #FCD34D",
-                    color: "#92400E",
-                    padding: "8px 14px",
-                    fontSize: "12px",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
-                  ✨ Generate Atelier Hue
-                </button>
-                <button
-                  type="button"
-                  onClick={addCustomColor}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
                     background: "#FFFFFF",
+                    color: "#64748B",
                     border: "1px solid #CBD5E1",
-                    color: "#334155",
-                    padding: "8px 14px",
-                    fontSize: "12px",
-                    borderRadius: "6px",
+                    padding: "9px 18px",
+                    fontSize: "12.5px",
                     cursor: "pointer",
+                    borderRadius: "6px",
                     fontWeight: 500,
                   }}
                 >
-                  + Add Custom Swatch
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  style={{
+                    background: "#0F172A",
+                    color: "#FFFFFF",
+                    border: "none",
+                    padding: "9px 24px",
+                    fontSize: "12.5px",
+                    cursor: saving ? "wait" : "pointer",
+                    borderRadius: "6px",
+                    fontWeight: 600,
+                    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.15)",
+                    opacity: saving ? 0.7 : 1,
+                  }}
+                >
+                  {saving ? "Saving Piece..." : isCreating ? "Publish Piece to Storefront" : "Save Specifications"}
                 </button>
               </div>
-            </div>
-
-            <div style={{ gridColumn: "span 2", display: "flex", gap: "12px", marginTop: "12px" }}>
-              <button
-                type="submit"
-                style={{
-                  background: "#10B981",
-                  color: "#FFFFFF",
-                  border: "none",
-                  padding: "11px 24px",
-                  fontSize: "13px",
-                  cursor: "pointer",
-                  borderRadius: "6px",
-                  fontWeight: 600,
-                  boxShadow: "0 1px 3px rgba(16, 185, 129, 0.3)"
-                }}
-              >
-                {isCreating ? "Confirm & Seed Piece" : "Save Changes"}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setIsCreating(false); setIsEditing(false); }}
-                style={{
-                  background: "#FFFFFF",
-                  color: "#64748B",
-                  border: "1px solid #CBD5E1",
-                  padding: "11px 24px",
-                  fontSize: "13px",
-                  cursor: "pointer",
-                  borderRadius: "6px",
-                  fontWeight: 500
-                }}
-              >
-                Cancel
-              </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Main product entries table */}
+      {/* ===================================================================
+          ENTERPRISE CATALOGUE DATA GRID WITH ADVANCED FILTER BAR
+          =================================================================== */}
       <div style={{
         background: "#FFFFFF",
         border: "1px solid #E2E8F0",
-        borderRadius: "8px",
-        padding: "24px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.03)"
+        borderRadius: "10px",
+        padding: "20px 24px",
+        boxShadow: "0 1px 3px rgba(15, 23, 42, 0.03)",
       }}>
+        {/* Search & Filter Toolbar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+          {/* Search bar */}
+          <div style={{ position: "relative", minWidth: "280px" }}>
+            <input
+              type="text"
+              placeholder="Search by piece name, category, or slug..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                ...inputStyle,
+                padding: "8px 12px 8px 34px",
+                width: "320px",
+                fontSize: "12.5px",
+              }}
+            />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#94A3B8"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ position: "absolute", left: "11px", top: "11px" }}
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+
+          {/* Segment & Category & Media Filter Strip */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            {/* Gender Segment Tabs */}
+            <div style={{
+              display: "inline-flex",
+              background: "#F8FAFC",
+              border: "1px solid #E2E8F0",
+              borderRadius: "6px",
+              padding: "2px",
+            }}>
+              {(["ALL", "WOMEN", "MEN"] as const).map((g) => {
+                const isSelected = genderFilter === g;
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGenderFilter(g)}
+                    style={{
+                      background: isSelected ? "#0F172A" : "transparent",
+                      color: isSelected ? "#FFFFFF" : "#64748B",
+                      border: "none",
+                      padding: "5px 11px",
+                      borderRadius: "4px",
+                      fontSize: "11.5px",
+                      fontWeight: isSelected ? 600 : 500,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {g === "ALL" ? "All Segments" : g === "WOMEN" ? "Women" : "Men"}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Media Filter Tabs */}
+            <select
+              value={mediaFilter}
+              onChange={(e) => setMediaFilter(e.target.value as any)}
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid #CBD5E1",
+                borderRadius: "6px",
+                color: "#334155",
+                fontSize: "12px",
+                padding: "6px 10px",
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              <option value="ALL">All Media Types</option>
+              <option value="WITH_VIDEO">▶ Has Runway Video</option>
+              <option value="PHOTOS_ONLY">📷 Photo Stills Only</option>
+            </select>
+
+            {/* Category Dropdown */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid #CBD5E1",
+                borderRadius: "6px",
+                color: "#334155",
+                fontSize: "12px",
+                padding: "6px 10px",
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              <option value="ALL">All Categories &amp; Departments</option>
+              {groupedCategories.roots.map((root) => {
+                const children = groupedCategories.childrenMap[root.id] || [];
+                return (
+                  <optgroup key={root.id} label={root.name.toUpperCase()}>
+                    <option value={root.id}>All {root.name}</option>
+                    {children.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {root.name} → {sub.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+
+        {/* Table Data */}
         {loading ? (
-          <div style={{ color: "#64748B", fontSize: "13.5px" }}>Loading catalog pieces...</div>
-        ) : products.length === 0 ? (
-          <div style={{ color: "#94A3B8", fontSize: "13.5px" }}>No products found in the database.</div>
+          <div style={{ color: "#64748B", padding: "40px 0", textAlign: "center", fontSize: "13.5px" }}>
+            Querying atelier garment catalog...
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div style={{ color: "#94A3B8", padding: "48px 0", textAlign: "center", fontSize: "13.5px" }}>
+            No garment pieces match the specified filter criteria.
+          </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #E2E8F0", background: "#F8FAFC" }}>
-                  <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Piece Name</th>
-                  <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Gender</th>
+                  <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Visual Look</th>
+                  <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Garment Title</th>
                   <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Category</th>
-                  <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Colours</th>
+                  <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Palette</th>
+                  <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Media</th>
                   <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Price</th>
                   <th style={{ padding: "10px 14px", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600, textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => (
-                  <tr key={p.id} style={{ borderBottom: "1px solid #F1F5F9" }}>
-                    <td style={{ padding: "14px", fontWeight: 600, color: "#0F172A" }}>{p.name}</td>
-                    <td style={{ padding: "14px", color: "#64748B" }}>{p.gender}</td>
-                    <td style={{ padding: "14px" }}>
-                      <span style={{ background: "#F1F5F9", color: "#475569", padding: "3px 9px", borderRadius: "999px", fontSize: "11.5px", fontWeight: 500 }}>
-                        {p.category?.name || "Uncategorised"}
-                      </span>
-                    </td>
-                    <td style={{ padding: "14px" }}>
-                      <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-                        {p.colors && p.colors.length > 0 ? (
-                          p.colors.map((c) => (
+                {filteredProducts.map((p) => {
+                  const firstImage = p.media?.find((m) => m.type === "IMAGE")?.url || "/placeholder/front.jpg";
+                  const hasVideo = p.media?.some((m) => m.type === "VIDEO");
+
+                  return (
+                    <tr key={p.id} style={{ borderBottom: "1px solid #F1F5F9" }}>
+                      {/* Visual Look Thumbnail */}
+                      <td style={{ padding: "12px 14px" }}>
+                        <div style={{ position: "relative", width: "42px", height: "54px", borderRadius: "5px", overflow: "hidden", background: "#F1F5F9", border: "1px solid #E2E8F0" }}>
+                          <img
+                            src={firstImage}
+                            alt={p.name}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = "none";
+                            }}
+                          />
+                          {hasVideo && (
                             <span
-                              key={c.id || c.name}
-                              title={`${c.name} (${c.hex})`}
+                              title="Features runway lookbook video"
                               style={{
-                                width: "16px",
-                                height: "16px",
-                                borderRadius: "50%",
-                                background: c.hex,
-                                display: "inline-block",
-                                border: "1px solid rgba(0,0,0,0.15)",
-                                boxShadow: "0 1px 2px rgba(0,0,0,0.1)"
+                                position: "absolute",
+                                bottom: "2px",
+                                right: "2px",
+                                background: "#0F172A",
+                                color: "#FFFFFF",
+                                fontSize: "8.5px",
+                                padding: "1px 4px",
+                                borderRadius: "2px",
+                                fontWeight: 700,
                               }}
-                            />
-                          ))
-                        ) : (
-                          <span style={{ fontSize: "11.5px", color: "#94A3B8" }}>No colors</span>
-                        )}
-                        <span style={{ fontSize: "11px", color: "#64748B", marginLeft: "4px", fontWeight: 500 }}>
-                          {p.colors?.length || 0}
-                        </span>
-                      </div>
-                    </td>
-                    <td style={{ padding: "14px", fontWeight: 600, color: "#059669" }}>{formatNaira(p.priceMinor)}</td>
-                    <td style={{ padding: "14px", textAlign: "right" }}>
-                      <button
-                        onClick={() => openEditForm(p)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#10B981",
-                          cursor: "pointer",
-                          fontWeight: 600,
-                          marginRight: "14px",
-                          fontSize: "12.5px"
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(p.id)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#EF4444",
-                          cursor: "pointer",
-                          fontWeight: 600,
-                          fontSize: "12.5px"
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                            >
+                              ▶
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Title & Slug */}
+                      <td style={{ padding: "14px" }}>
+                        <div style={{ fontWeight: 600, color: "#0F172A" }}>{p.name}</div>
+                        <div style={{ fontSize: "11px", color: "#94A3B8", fontFamily: "var(--font-mono)", marginTop: "2px" }}>
+                          {p.slug}
+                        </div>
+                      </td>
+
+                      {/* Category & Segment */}
+                      <td style={{ padding: "14px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                          <span style={{ fontSize: "12.5px", color: "#334155", fontWeight: 500 }}>
+                            {p.category?.name || "Uncategorised"}
+                          </span>
+                          <span style={{ fontSize: "10.5px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                            {p.gender === "WOMEN" ? "Women's" : "Men's"}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Swatches */}
+                      <td style={{ padding: "14px" }}>
+                        <div style={{ display: "flex", gap: "5px", alignItems: "center", flexWrap: "wrap" }}>
+                          {p.colors && p.colors.length > 0 ? (
+                            p.colors.map((c) => (
+                              <span
+                                key={c.id || c.name}
+                                title={`${c.name} (${c.hex})`}
+                                style={{
+                                  width: "14px",
+                                  height: "14px",
+                                  borderRadius: "50%",
+                                  background: c.hex,
+                                  display: "inline-block",
+                                  border: "1px solid rgba(0,0,0,0.15)",
+                                  boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                                }}
+                              />
+                            ))
+                          ) : (
+                            <span style={{ fontSize: "11px", color: "#94A3B8" }}>No colors</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Media Assets Count */}
+                      <td style={{ padding: "14px" }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontSize: "11.5px", color: "#475569", background: "#F1F5F9", padding: "2px 7px", borderRadius: "4px", fontWeight: 500 }}>
+                            📷 {p.media?.filter((m) => m.type === "IMAGE").length || 0}
+                          </span>
+                          {hasVideo && (
+                            <span style={{ fontSize: "11.5px", color: "#1D4ED8", background: "#EFF6FF", border: "1px solid #BFDBFE", padding: "2px 6px", borderRadius: "4px", fontWeight: 600 }}>
+                              ▶ Video
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Price */}
+                      <td style={{ padding: "14px", fontWeight: 700, color: "#0F172A" }}>
+                        {formatNaira(p.priceMinor)}
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ padding: "14px", textAlign: "right", whiteSpace: "nowrap" }}>
+                        <Link
+                          href={`/products/${p.slug}`}
+                          target="_blank"
+                          title="Preview piece on customer storefront"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#64748B",
+                            fontSize: "12px",
+                            fontWeight: 500,
+                            marginRight: "10px",
+                            textDecoration: "none",
+                          }}
+                        >
+                          View ↗
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => openEditForm(p)}
+                          style={{
+                            background: "#F8FAFC",
+                            border: "1px solid #CBD5E1",
+                            color: "#0F172A",
+                            padding: "5px 11px",
+                            borderRadius: "5px",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            marginRight: "8px",
+                            transition: "all 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = "#94A3B8";
+                            e.currentTarget.style.background = "#FFFFFF";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = "#CBD5E1";
+                            e.currentTarget.style.background = "#F8FAFC";
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(p.id, p.name)}
+                          style={{
+                            background: "#FEF2F2",
+                            border: "1px solid #FECACA",
+                            color: "#DC2626",
+                            padding: "5px 11px",
+                            borderRadius: "5px",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#FEE2E2";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "#FEF2F2";
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

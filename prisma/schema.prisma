@@ -233,3 +233,40 @@ model SystemSettings {
   value     String   // Stringified JSON
   updatedAt DateTime @updatedAt
 }
+
+// One-to-one video consultation between a customer and the atelier (LiveKit).
+// The customer joins via /consult/<room>; the room name is the unguessable link.
+model Consultation {
+  id               String    @id @default(cuid())
+  room             String    @unique
+  customerName     String
+  customerEmail    String?
+  customerPhone    String?
+  topic            String    @default("Bespoke consultation")
+  notes            String?
+  bespokeRequestId String?
+  status           String    @default("SCHEDULED") // SCHEDULED | LIVE | ENDED | CANCELLED
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  endedAt          DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// One-to-many runway / live-shopping broadcast (LiveKit). Viewers watch at /live/<slug>.
+model LiveShow {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  room        String    @unique
+  title       String
+  description String?
+  posterImage String?
+  featured    Boolean   @default(true) // show the "Live now" bar on the storefront while live
+  status      String    @default("SCHEDULED") // SCHEDULED | LIVE | ENDED
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  peakViewers Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

@@ -114,7 +114,7 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, name, description, fabricCare, shippingReturnsNote, gender, categoryId, priceMinor, colors } = body;
+    const { id, name, description, fabricCare, shippingReturnsNote, gender, categoryId, priceMinor, colors, media } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Product id is required" }, { status: 400 });
@@ -194,6 +194,25 @@ export async function PATCH(req: NextRequest) {
         if (removedVariantIds.length > 0) {
           await tx.productVariant.deleteMany({
             where: { id: { in: removedVariantIds } },
+          });
+        }
+      }
+
+      // 4. Update media assets if supplied
+      if (media && Array.isArray(media)) {
+        await tx.productMedia.deleteMany({
+          where: { productId: id },
+        });
+
+        if (media.length > 0) {
+          await tx.productMedia.createMany({
+            data: media.map((m: any, i: number) => ({
+              productId: id,
+              type: m.type === "VIDEO" ? "VIDEO" : "IMAGE",
+              url: (m.url || "").trim(),
+              label: (m.label || "").trim() || (m.type === "VIDEO" ? "Runway Video" : `Angle ${i + 1}`),
+              sortOrder: i,
+            })),
           });
         }
       }
